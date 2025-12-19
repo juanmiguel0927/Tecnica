@@ -158,92 +158,97 @@
                 id: 'stance', title: '1. Postura', icon: <Icons.Stance />,
                 isComplete: userProgress?.stance,
                 content: {
-                    summary: "Estabilidad Biomecánica: La base inamovible.",
+                    summary: "Estabilidad y Equilibrio: Construyendo la base perfecta.",
                     details: [
-                        { title: "El Trípode Estructural", text: "La estabilidad no viene de la fuerza muscular, sino de la estructura ósea. Distribuye el peso para que el pie trasero soporte la carga principal, mientras el puente y la pierna delantera estabilizan. Debes sentirte 'anclado' al suelo." },
+                        { title: "El Trípode de Acero", text: "Tu estabilidad nace del suelo. El pie trasero debe estar en la línea del tiro, soportando la mayor parte del peso. La pierna trasera recta (bloqueada) actúa como un pilar inamovible. La pierna delantera se flexiona ligeramente para liberar tensión en la espalda baja." },
+                        { title: "Alineación Vertical", text: "Al agacharte, tu barbilla debe bajar directamente sobre el taco. Esto alinea tu centro visual con el eje del tiro. Si tu cabeza está ladeada, tu cerebro percibirá mal el ángulo." },
                         { title: "Sensación Clave", text: "Imagina que eres una mesa de tres patas. Si alguien te empujara suavemente del hombro, no deberías moverte. Relaja la parte superior del cuerpo." }
                     ],
                     drills: [
-                        { type: 'off', title: 'El Espejo', desc: "Mírate de frente: ¿Está tu barbilla sobre el taco?" }, 
-                        { type: 'on', title: 'Estatua', desc: "Tira una bola fuerte y quédate congelado 5 segundos.", tool: <StopwatchTool /> }
+                        { type: 'off', title: 'El Espejo', desc: "Mírate de frente: ¿Tu codo, hombro y cabeza forman una línea vertical perfecta?" }, 
+                        { type: 'on', title: 'Estatua', desc: "Tira una bola fuerte y quédate inmóvil 5 segundos. Si te levantas antes, fallas.", tool: <StopwatchTool /> }
                     ],
-                    evaluation: { question: "¿Cuál es la función principal de la pierna trasera?", options: [{ text: "Flexionarse", correct: false, feedback: "Incorrecto." }, { text: "Estar recta (bloqueada)", correct: true, feedback: "¡Correcto! Crea un pilar sólido." }, { text: "Moverse", correct: false, feedback: "Error." }] }
+                    evaluation: { question: "¿Cuál es la función principal de la pierna trasera?", options: [{ text: "Flexionarse", correct: false, feedback: "Incorrecto. La flexión causa inestabilidad vertical." }, { text: "Estar recta (bloqueada)", correct: true, feedback: "¡Correcto! Crea un pilar sólido bajo la línea de tiro." }, { text: "Moverse", correct: false, feedback: "Error. Moverse arruina la puntería." }] }
                 }
             },
             {
                 id: 'grip', title: '2. Agarre', icon: <Icons.Grip />,
                 isComplete: userProgress?.grip,
                 content: {
-                    summary: "Energía Limpia: Transmisión sin interferencia.",
+                    summary: "Sutileza y Control: La conexión con el taco.",
                     details: [
-                        { title: "La Jaula del Pájaro", text: "Sostén el taco con la fuerza suficiente para que no se caiga, pero tan suave como para no aplastar un pájaro. La presión tensa el antebrazo y desvía la punta." },
+                        { title: "La Jaula del Pájaro", text: "Sostén el taco como si tuvieras un pajarito vivo en la mano: lo suficiente para que no vuele, pero sin lastimarlo. Debe haber un pequeño espacio de aire entre la palma de tu mano y la madera." },
+                        { title: "Muñeca Viva", text: "La muñeca no debe estar rígida. Debe actuar como una bisagra fluida. Al ir hacia atrás, los dedos se relajan; al ir hacia adelante, acompañan el movimiento sin apretar bruscamente." },
                         { title: "Sensación Clave", text: "Debes sentir el peso del taco en las yemas de tus dedos, no en la palma. Siente cómo el taco quiere moverse solo; tú lo guías." }
                     ],
-                    drills: [{ type: 'off', title: 'Pasta Dental', desc: "Swing suave con tubo abierto." }, { type: 'on', title: 'Tiro Pluma', desc: "Empuja la bola solo 30cm." }],
-                    evaluation: { question: "¿Qué pasa si aprietas el taco al impactar?", options: [{ text: "Más potencia", correct: false, feedback: "Falso." }, { text: "Desvío de punta", correct: true, feedback: "¡Exacto! Causa error vertical." }, { text: "Más precisión", correct: false, feedback: "Falso." }] }
+                    drills: [{ type: 'off', title: 'Pasta Dental', desc: "Haz swings imaginando que el mango es un tubo de pasta abierto. No derrames nada." }, { type: 'on', title: 'Tiro Pluma', desc: "Empuja la bola solo 30cm. Requiere un agarre de seda." }],
+                    evaluation: { question: "¿Qué pasa si aprietas el taco al impactar?", options: [{ text: "Más potencia", correct: false, feedback: "Falso. La tensión frena el golpe." }, { text: "Desvío de punta", correct: true, feedback: "¡Exacto! La tensión muscular desvía la trayectoria milimétricamente." }, { text: "Más precisión", correct: false, feedback: "Falso. Pierdes sensibilidad." }] }
                 }
             },
             {
                 id: 'alignment', title: '3. Alineación', icon: <Icons.Eye />,
                 isComplete: userProgress?.alignment,
                 content: {
-                    summary: "Economía de Movimiento: Apuntar antes de disparar.",
+                    summary: "Puntería: El trabajo se hace de pie.",
                     details: [
-                        { title: "La Entrada", text: "La puntería se hace de pie. Visualiza la línea, da un paso hacia ella y baja el cuerpo DIRECTAMENTE sobre ella. Nunca ajustes abajo." },
-                        { title: "Sensación Clave", text: "Debes sentir que 'caes' dentro del tiro. Una vez abajo, la línea debe verse obvia y cómoda." }
+                        { title: "Visión desde Arriba", text: "Nunca busques la línea de tiro estando agachado. Identifica la línea imaginaria entre la blanca y el objetivo estando de pie. Da un paso decidido hacia esa línea y baja el cuerpo como si aterrizaras un avión sobre una pista." },
+                        { title: "Vision Center", text: "Todos tenemos un punto dominante de visión (ojo derecho, izquierdo o centro). Debes colocar ese punto exacto sobre la vara del taco para ver la línea recta sin distorsión." },
+                        { title: "Sensación Clave", text: "Debes sentir que 'encajas' en el tiro. Al bajar, el taco ya debe estar apuntando a donde quieres. Si sientes que tienes que corregir el brazo, levántate y empieza de nuevo." }
                     ],
-                    drills: [{ type: 'off', title: 'Línea de Suelo', desc: "Baja hacia una línea. ¿Tu nariz termina encima?" }, { type: 'on', title: 'Tiro Ciego', desc: "Alinea, cierra ojos, tira." }],
-                    evaluation: { question: "¿Cuándo debes encontrar la línea de tiro?", options: [{ text: "Agachado", correct: false, feedback: "Tarde." }, { text: "De pie", correct: true, feedback: "¡Sí! Antes de bajar." }, { text: "En limajes", correct: false, feedback: "No." }] }
+                    drills: [{ type: 'off', title: 'Línea de Suelo', desc: "Párate y baja hacia una línea en el piso. Tu nariz debe caer exactamente encima." }, { type: 'on', title: 'Tiro Ciego', desc: "Alinea, cierra los ojos y dispara. Si fallas, tu cuerpo no estaba alineado." }],
+                    evaluation: { question: "¿Cuándo debes encontrar la línea de tiro?", options: [{ text: "Agachado", correct: false, feedback: "Error. Pierdes la perspectiva global." }, { text: "De pie", correct: true, feedback: "¡Sí! La geometría se ve mejor desde arriba." }, { text: "En limajes", correct: false, feedback: "No. Los limajes son para el ritmo." }] }
                 }
             },
             {
                 id: 'stroke', title: '4. Golpe', icon: <Icons.Stroke />,
                 isComplete: userProgress?.stroke,
                 content: {
-                    summary: "Timing: Aceleración a través de la bola.",
+                    summary: "Ejecución: Ritmo y terminación.",
                     details: [
-                        { title: "El Péndulo Puro", text: "El codo es el único pivote. Imagina que está clavado en el aire. El antebrazo cuelga libremente." },
-                        { title: "Sensación Clave", text: "Imagina que el taco es el arco de un violín. Movimiento largo y suave, sin golpes secos." }
+                        { title: "El Péndulo Puro", text: "Tu codo debe estar fijo en el espacio, como si tuviera un clavo invisible. Solo se mueve el antebrazo. Si el codo sube o baja (pistoneo), la punta del taco se moverá verticalmente, causando pifias." },
+                        { title: "Acelerar a Través (Follow Through)", text: "El error #1 es golpear LA bola. Debes golpear A TRAVÉS de la bola. Tu taco debe terminar su recorrido 15-20cm más adelante de donde estaba la blanca. Imagina que quieres atravesarla." },
+                        { title: "Sensación Clave", text: "Siente que lanzas el taco hacia la tronera, como quien lanza un dardo o una jabalina. El golpe debe sentirse como una aceleración suave, no un choque seco." }
                     ],
-                    drills: [{ type: 'on', title: 'MOFUDAT', desc: "Tira y espera el rebote quieto." }, { type: 'on', title: 'Atravesar', desc: "Termina 20cm adelante." }],
-                    evaluation: { question: "¿Máxima velocidad del taco?", options: [{ text: "Inicio", correct: false, feedback: "Jerk." }, { text: "Impacto", correct: false, feedback: "Cerca." }, { text: "Atravesando", correct: true, feedback: "¡Correcto! Follow through." }] }
+                    drills: [{ type: 'on', title: 'MOFUDAT', desc: "Tira a la banda y quédate congelado hasta que la bola regrese y toque tu punta." }, { type: 'on', title: 'Atravesar', desc: "Oblígate a que la virola termine lejos de donde impactaste." }],
+                    evaluation: { question: "¿Máxima velocidad del taco?", options: [{ text: "Inicio", correct: false, feedback: "Eso es un tirón (Jerk)." }, { text: "Impacto", correct: false, feedback: "Cerca, pero insuficiente." }, { text: "Atravesando", correct: true, feedback: "¡Correcto! La aceleración debe ser progresiva hasta el final." }] }
                 }
             },
             {
                 id: 'physics', title: '5. Física', icon: <Icons.Physics />, isSimulator: true,
                 isComplete: userProgress?.physics,
                 content: {
-                    summary: "Geometría Sagrada.",
+                    summary: "Predicción: La geometría del paño.",
                     details: [
-                        { title: "Línea Tangente (90°)", text: "Sin efecto, la blanca sale a 90° de la bola objetivo." },
-                        { title: "Sensación Clave", text: "Deja de ver bolas chocando. Empieza a ver líneas en el paño." }
+                        { title: "La Regla de los 90°", text: "Si golpeas la blanca sin efecto (golpe seco o stun) contra una bola objeto, la blanca SIEMPRE saldrá despedida en un ángulo de 90 grados respecto a la trayectoria de la otra bola. Úsalo para evitar meter la blanca." },
+                        { title: "Bola Fantasma", text: "No mires la bola objeto. Visualiza una bola imaginaria pegada a ella, en línea recta opuesta a la tronera. Ahí es donde debes enviar el centro de tu bola blanca." },
+                        { title: "Sensación Clave", text: "Deja de mirar bolas y empieza a ver líneas. Siente la geometría antes de agacharte. Confía en que si golpeas el punto correcto, la física hará el resto." }
                     ],
-                    drills: [{ type: 'on', title: 'Stop Shot', desc: "Detener la blanca en seco." }, { type: 'on', title: 'Wagon Wheel', desc: "Control de salidas." }],
-                    evaluation: { question: "Ángulo de salida sin efecto", options: [{ text: "45°", correct: false, feedback: "No." }, { text: "90°", correct: true, feedback: "¡Sí! Tangente." }, { text: "Recto", correct: false, feedback: "Solo con Top." }] }
+                    drills: [{ type: 'on', title: 'Stop Shot', desc: "Golpea centro-abajo fuerte para detener la blanca al impacto." }, { type: 'on', title: 'Wagon Wheel', desc: "Usa el mismo tiro recto y varía el efecto para mover la blanca a diferentes zonas." }],
+                    evaluation: { question: "Ángulo de salida sin efecto (Stun)", options: [{ text: "45°", correct: false, feedback: "Falso." }, { text: "90°", correct: true, feedback: "¡Correcto! Es la línea tangente." }, { text: "Recto", correct: false, feedback: "Solo ocurre con efecto corrido (Top)." }] }
                 }
             },
             {
                 id: 'quiz', title: '6. Examen', icon: <Icons.Quiz />,
                 isQuiz: true,
                 content: {
-                    summary: "Evaluación Final.",
+                    summary: "Evaluación Final Técnica.",
                     questions: [
-                        { question: "¿Propósito de barbilla baja?", options: [{ text: "Comodidad", correct: false, feedback: "No." }, { text: "Reducir paralaje", correct: true, feedback: "Correcto." }, { text: "Estética", correct: false, feedback: "No." }] },
-                        { question: "¿Agarre de palma completa causa?", options: [{ text: "Bloqueo de muñeca", correct: true, feedback: "Correcto." }, { text: "Fuerza", correct: false, feedback: "No." }, { text: "Control", correct: false, feedback: "Falso." }] },
-                        { question: "¿Peor error de alineación?", options: [{ text: "Entrar rápido", correct: false, feedback: "No." }, { text: "Ajustar agachado", correct: true, feedback: "Crítico." }, { text: "Sin tiza", correct: false, feedback: "No." }] },
-                        { question: "¿Pivote del swing?", options: [{ text: "Hombro", correct: false, feedback: "No." }, { text: "Muñeca", correct: false, feedback: "Ayuda, pero no es el eje." }, { text: "Codo", correct: true, feedback: "Correcto." }] },
-                        { question: "Blanca sin efecto vs corte. ¿Salida?", options: [{ text: "90 grados", correct: true, feedback: "Ley física." }, { text: "45 grados", correct: false, feedback: "No." }, { text: "Recto", correct: false, feedback: "No." }] },
-                        { question: "¿Puente sólido?", options: [{ text: "Palma fuerte", correct: false, feedback: "No." }, { text: "Yemas ancladas", correct: true, feedback: "Estabilidad real." }, { text: "Dedo alzado", correct: false, feedback: "Inestable." }] },
-                        { question: "¿Respiración?", options: [{ text: "Aguantar", correct: false, feedback: "Tensión." }, { text: "Exhalar/Pausa al tirar", correct: true, feedback: "Correcto." }, { text: "Inhalar", correct: false, feedback: "Levanta el pecho." }] },
-                        { question: "¿Dónde mirar al impactar?", options: [{ text: "Blanca", correct: false, feedback: "Error común." }, { text: "Bola Objetivo", correct: true, feedback: "Guía la mano." }, { text: "Taco", correct: false, feedback: "Jamás." }] },
-                        { question: "¿Levantar el cuerpo antes?", options: [{ text: "Nada", correct: false, feedback: "Falso." }, { text: "Desvía el taco", correct: true, feedback: "Sí." }, { text: "Ayuda", correct: false, feedback: "No." }] },
-                        { question: "¿Bola Fantasma?", options: [{ text: "Imaginaria en impacto", correct: true, feedback: "Referencia clave." }, { text: "Mítica", correct: false, feedback: "No." }, { text: "Reflejo", correct: false, feedback: "No." }] }
+                        { question: "¿Cuál es el propósito principal de mantener la barbilla baja, casi tocando el taco?", options: [{ text: "Comodidad", correct: false, feedback: "No es por comodidad, aunque debe ser sostenible." }, { text: "Reducir error de paralaje", correct: true, feedback: "¡Correcto! Al acercar los ojos a la línea del taco, ves la línea real sin distorsión angular." }, { text: "Proteger el cuello", correct: false, feedback: "Incorrecto." }] },
+                        { question: "¿Qué sucede biomecánicamente si agarras el taco con toda la palma de la mano?", options: [{ text: "Bloqueas la muñeca", correct: true, feedback: "¡Correcto! El agarre de palma completa ('Death Grip') impide el muñequeo natural, reduciendo fluidez y precisión." }, { text: "Aumentas la fuerza", correct: false, feedback: "Falso, la tensión reduce la velocidad final." }, { text: "Mejoras el control", correct: false, feedback: "Falso, pierdes sensibilidad." }] },
+                        { question: "En la alineación, ¿cuál es el error más grave al entrar a la mesa?", options: [{ text: "Entrar rápido", correct: false, feedback: "No es ideal, pero no es el peor error." }, { text: "Ajustar el cuerpo ya agachado", correct: true, feedback: "¡Crítico! Si te mueves lateralmente estando abajo, pierdes la línea de visión que estableciste de pie." }, { text: "No usar tiza", correct: false, feedback: "Es un error, pero de equipo, no de alineación corporal." }] },
+                        { question: "¿Por qué el codo debe ser el único punto de pivote en el swing?", options: [{ text: "Estética", correct: false, feedback: "No." }, { text: "Potencia", correct: false, feedback: "La potencia viene de la aceleración, no solo del codo." }, { text: "Consistencia lineal", correct: true, feedback: "¡Correcto! Si el codo sube o baja (pistoneo), la punta del taco se mueve verticalmente, causando pifias." }] },
+                        { question: "Si golpeas la bola blanca en el centro geométrico contra una bola objetivo cortada, ¿qué hace la blanca?", options: [{ text: "Se detiene", correct: false, feedback: "Solo en tiro recto." }, { text: "Sigue la línea tangente (90°)", correct: true, feedback: "¡Ley Física! Sin rotación (stun), la blanca siempre sale a 90 grados de la línea de impacto." }, { text: "Sigue adelante", correct: false, feedback: "Necesitaría efecto corrido." }] },
+                        { question: "¿Qué define un 'puente' sólido?", options: [{ text: "Presión fuerte de la palma", correct: false, feedback: "La palma a veces ni toca." }, { text: "Yemas de los dedos presionando el paño", correct: true, feedback: "¡Exacto! La estabilidad viene de los dedos anclados y el pulgar firme contra el índice." }, { text: "Levantar el pulgar", correct: false, feedback: "Eso es un puente abierto inestable." }] },
+                        { question: "¿Cuándo debes soltar el aire (exhalar) en el tiro?", options: [{ text: "Antes de agacharte", correct: false, feedback: "Muy pronto." }, { text: "Durante el golpe final", correct: true, feedback: "¡Sí! O mantener una pausa respiratoria natural. Nunca inhalar al golpear, pues levanta el pecho." }, { text: "Después de que la bola entre", correct: false, feedback: "Tarde." }] },
+                        { question: "Para un tiro largo y recto, ¿dónde debes mirar al momento del impacto?", options: [{ text: "A la bola blanca", correct: false, feedback: "Común en novatos, pero incorrecto para precisión lejana." }, { text: "A la bola objetivo (Object Ball)", correct: true, feedback: "¡Correcto! Tus ojos guían la mano. Fija la vista en el punto de contacto de la bola objetivo." }, { text: "Al taco", correct: false, feedback: "Nunca mires el taco." }] },
+                        { question: "¿Qué efecto tiene levantar el cuerpo antes de terminar el tiro?", options: [{ text: "Ninguno", correct: false, feedback: "Falso." }, { text: "Desvía el taco", correct: true, feedback: "¡Sí! Levantar el cuerpo suele levantar el hombro y, por ende, la punta del taco, causando fallos." }, { text: "Ayuda a ver mejor", correct: false, feedback: "Ves mejor el fallo, nada más." }] },
+                        { question: "En física de billar, ¿qué es la 'Bola Fantasma'?", options: [{ text: "Una bola imaginaria en el punto de impacto", correct: true, feedback: "¡Concepto Clave! Imaginas dónde debería estar la blanca al tocar la objetivo para enviarla a la tronera." }, { text: "Una bola que se mueve sola", correct: false, feedback: "No." }, { text: "El reflejo en la banda", correct: false, feedback: "Eso es sistema de diamantes/espejos." }] }
                     ]
                 }
             }
         ];
 
-        // ... (Componentes BilliardBallBtn, UserLogin, SmartSimulator se mantienen igual con mejoras visuales menores si es necesario) ...
+        // --- COMPONENTE BOLA DE BILLAR ---
         const BilliardBallBtn = ({ color, number, label, onClick, subIcon, size = 'large' }) => {
             const sizeClass = size === 'large' ? 'w-24 h-24' : 'w-16 h-16';
             const numSize = size === 'large' ? 'text-2xl' : 'text-lg';
@@ -283,7 +288,6 @@
             };
             const handleGuest = () => onLogin({ name: "Invitado", isGuest: true, progress: {} });
             
-            // Import/Export logic same as before...
             const handleImportClick = () => fileInputRef.current.click();
             const handleImportFile = (event) => {
                 const file = event.target.files[0];
@@ -358,6 +362,10 @@
                                 <div className="flex gap-2"><button onClick={() => setView('menu')} className="flex-1 py-3 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20 transition">Cancelar</button><button onClick={handleAddUser} className="flex-1 py-3 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition shadow-lg">Crear</button></div>
                             </div>
                         )}
+                        
+                        <div className="absolute bottom-8 text-center w-full">
+                             <p className="text-[10px] text-white/40 font-medium">Desarrollado por <span className="text-emerald-400">Juan Miguel Rios Redondo</span></p>
+                        </div>
                     </div>
                 </div>
             );
