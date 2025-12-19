@@ -249,13 +249,13 @@
             };
 
             return (
-                <div className="min-h-screen flex items-center justify-center animate-felt-cycle felt-bg p-6 relative overflow-hidden">
-                    {/* Marco de madera de la mesa */}
-                    <div className="absolute inset-4 wood-texture rounded-3xl shadow-2xl pointer-events-none border-8 border-[#2a1e10]"></div>
+                <div className="min-h-screen flex items-center justify-center wood-texture p-4 relative overflow-hidden">
+                    {/* The Felt Surface - Changes Color */}
+                    <div className="absolute inset-4 sm:inset-8 rounded-3xl shadow-felt border-8 border-[#2a1e10]/50 animate-felt-cycle felt-bg"></div>
                     
-                    {/* Diamantes en el marco */}
-                    <div className="absolute top-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2"></div>
-                    <div className="absolute bottom-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2"></div>
+                    {/* Diamantes en el marco (simulados en esquinas) */}
+                    <div className="absolute top-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2 z-0"></div>
+                    <div className="absolute bottom-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2 z-0"></div>
 
                     <div className="z-10 w-full max-w-2xl flex flex-col items-center">
                         {/* Logo / Título */}
