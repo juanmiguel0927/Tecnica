@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tiro Maestro V36 - Pro Fixed</title>
+    <title>Tiro Maestro (Entrenador)</title>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel para compilar JSX en el navegador -->
+    <!-- Babel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     
     <!-- Tailwind CSS -->
@@ -26,11 +26,27 @@
                         wood: '#3f2e18',
                         woodLight: '#5c4028'
                     },
-                    animation: { 'fade-in': 'fadeIn 0.5s ease-out' },
-                    keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } },
+                    animation: { 
+                        'fade-in': 'fadeIn 0.5s ease-out', 
+                        'bounce-sm': 'bounceSm 1s infinite',
+                        'felt-cycle': 'feltCycle 30s infinite alternate',
+                        'roll-in': 'rollIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                    },
+                    keyframes: { 
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        rollIn: { '0%': { opacity: '0', transform: 'scale(0.5) rotate(-180deg)' }, '100%': { opacity: '1', transform: 'scale(1) rotate(0deg)' } },
+                        feltCycle: {
+                            '0%': { backgroundColor: '#15803d' },   /* Verde */
+                            '25%': { backgroundColor: '#0f5132' },  /* Verde Oscuro */
+                            '50%': { backgroundColor: '#0e7490' },  /* Azul */
+                            '75%': { backgroundColor: '#be123c' },  /* Rojo */
+                            '100%': { backgroundColor: '#15803d' }  
+                        }
+                    },
                     boxShadow: {
                         'wood': 'inset 0 0 20px rgba(0,0,0,0.5)',
-                        'felt': 'inset 0 0 50px rgba(0,0,0,0.3)'
+                        'felt': 'inset 0 0 100px rgba(0,0,0,0.5)',
+                        'ball': 'inset -5px -5px 15px rgba(0,0,0,0.4), inset 5px 5px 15px rgba(255,255,255,0.2), 5px 10px 15px rgba(0,0,0,0.5)'
                     }
                 }
             }
@@ -40,35 +56,67 @@
     <style>
         body { overscroll-behavior: none; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
         .touch-none { touch-action: none; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .scroller::-webkit-scrollbar { height: 4px; }
+        .scroller::-webkit-scrollbar-track { background: transparent; }
+        .scroller::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .scroller::-webkit-scrollbar-thumb { background: #334155; }
         .cursor-move { cursor: move; }
-        /* Glassmorphism */
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
-        .dark .glass { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); }
-        /* Texturas generadas con CSS puro para evitar cargas externas */
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        .dark .glass { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255,255,255,0.1); }
         .wood-texture { background-color: #3f2e18; background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 2px, transparent 2px, transparent 4px); }
-        .felt-texture { background-image: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%); }
+        .felt-bg { 
+            background-image: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.4) 100%);
+            transition: background-color 2s ease;
+        }
         .smooth-move { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Estilos específicos para las bolas de billar */
+        .pool-ball {
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .pool-ball:hover { transform: scale(1.05); z-index: 10; }
+        .pool-ball:active { transform: scale(0.95); }
+        .pool-ball::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 15%;
+            width: 30%;
+            height: 20%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            filter: blur(2px);
+        }
+        .ball-number {
+            background: white;
+            border-radius: 50%;
+            width: 50%;
+            height: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: black;
+            font-family: monospace;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-    <!-- Contenedor Principal -->
     <div id="root"></div>
-
-    <!-- Script de Error Global por si React falla antes de cargar -->
-    <script>
-        window.onerror = function(message, source, lineno, colno, error) {
-            document.body.innerHTML = '<div style="color:red; padding:20px; font-family:sans-serif;"><h2>Error Crítico</h2><p>' + message + '</p><p>Line: ' + lineno + '</p></div>';
-        };
-    </script>
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- ICONOS SVG ---
+        // --- ICONOS COMPLETOS Y VERIFICADOS ---
         const Icons = {
             Table: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="12" x="3" y="10" rx="2"/><circle cx="12" cy="16" r="2"/></svg>,
-            Home: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
             Stance: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
             Grip: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>,
             Eye: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>,
@@ -80,401 +128,355 @@
             Move: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="19 9 22 12 19 15"/><polyline points="9 19 12 22 15 19"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/></svg>,
             Play: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3" /></svg>,
             Flip: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>,
-            Folder: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+            Folder: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>,
+            LogOut: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>,
+            Upload: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>,
+            Download: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
+            Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5"/></svg>,
+            X: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+            Trash: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+            Plus: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+            Home: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         };
 
-        // --- DATOS DE TIROS (Scenarios) ---
-        const scenarios = [
-            // Tiro recto ajustado para ser físicamente posible (y=50 está dentro del margen de 12)
-            { name: "Recto a Esquina Sup", cb: {x:450, y:150}, ob:{x:550, y:50}, aim:{x:600, y:0}, desc: "Tiro directo a la tronera superior derecha." },
-            { name: "Recto al Centro", cb: {x:300, y:200}, ob:{x:300, y:50}, aim:{x:300, y:0}, desc: "Tiro recto simple a la tronera central." },
-            { name: "Corte 30° (Media Bola)", cb: {x:250, y:186}, ob:{x:400, y:100}, aim:{x:600, y:0}, desc: "Corte clásico." },
-            { name: "Corte Fino 60°", cb: {x:200, y:100}, ob:{x:500, y:100}, aim:{x:600, y:0}, desc: "Corte fino." },
-            { name: "Tiro Largo Diagonal", cb: {x:50, y:280}, ob:{x:550, y:20}, aim:{x:600, y:0}, desc: "Mesa completa." },
-            { name: "Bola Pegada a Banda", cb: {x:300, y:200}, ob:{x:450, y:288}, aim:{x:600, y:288}, desc: "Pegada a banda." }
-        ];
-
-        // --- CONTENIDO DEL CURSO ---
+        // --- DATOS DEL CURSO ---
         const getCourseData = (loadDrill) => [
             {
                 id: 'stance', title: '1. Postura', icon: <Icons.Stance />,
                 content: {
-                    summary: "La base inamovible.",
-                    details: [
-                        { title: "El Porqué", text: "El cuerpo es un péndulo inestable. Necesitas anclarlo al suelo con tres puntos." },
-                        { title: "Checklist", text: "1. Pie trasero en línea. 2. Pierna trasera recta. 3. Barbilla baja. 4. Puente firme." }
-                    ],
-                    drills: [
-                        { type: 'off', title: 'El Espejo', desc: "Mírate de frente. Tu cabeza, taco y brazo deben formar una línea vertical perfecta." },
-                        { type: 'off', title: 'Equilibrio', desc: "En tu postura, levanta la pierna delantera." },
-                        { type: 'on', title: 'Estatua', desc: "Tira y quédate congelado. Cuenta 3 segundos antes de levantarte." },
-                        { type: 'on', title: 'Puente de Roca', desc: "Pon el puente. Empújalo con la otra mano. No debe moverse." }
-                    ]
+                    summary: "Estabilidad Biomecánica.",
+                    details: [{ title: "El Trípode", text: "Usa tus huesos, no tus músculos." }, { title: "Checklist", text: "1. Pie trasero perpendicular. 2. Rodilla recta." }],
+                    drills: [{ type: 'off', title: 'El Espejo', desc: "Cabeza sobre el taco." }, { type: 'on', title: 'Estatua', desc: "Congela el tiro." }],
+                    evaluation: { question: "¿Función de la pierna trasera?", options: [{ text: "Flexionarse", correct: false, feedback: "Incorrecto." }, { text: "Estar recta", correct: true, feedback: "Correcto!" }, { text: "Moverse", correct: false, feedback: "Error." }] }
                 }
             },
             {
                 id: 'grip', title: '2. Agarre', icon: <Icons.Grip />,
                 content: {
-                    summary: "Sostén el taco como un pájaro herido.",
-                    details: [
-                        { title: "Mecánica", text: "Apretar el taco desvía la punta. La mano debe estar flexible." },
-                        { title: "Errores", text: "Apretar al impactar (Grip Clench) y agarrar con toda la palma." }
-                    ],
-                    drills: [
-                        { type: 'off', title: 'La Botella', desc: "Mete el taco en una botella vacía sin tocar los bordes." },
-                        { type: 'off', title: 'Pasta Dental', desc: "Imagina que el mango es un tubo abierto." },
-                        { type: 'on', title: 'Tiro Suave', desc: "Tira largo y muy suave. Si sientes vibración, estás apretando." },
-                        { type: 'on', title: 'Una Mano', desc: "Emboca bolas fáciles con una sola mano." }
-                    ]
+                    summary: "Energía Limpia.",
+                    details: [{ title: "Sin Fricción", text: "Imagina que el taco flota." }, { title: "Doble Péndulo", text: "Muñeca suelta." }],
+                    drills: [{ type: 'off', title: 'Pasta Dental', desc: "Swing suave." }, { type: 'on', title: 'Una Mano', desc: "Péndulo puro." }],
+                    evaluation: { question: "¿Si aprietas al impactar?", options: [{ text: "Más potencia", correct: false, feedback: "Falso." }, { text: "Desvío de punta", correct: true, feedback: "Exacto!" }, { text: "Más precisión", correct: false, feedback: "Falso." }] }
                 }
             },
             {
                 id: 'alignment', title: '3. Alineación', icon: <Icons.Eye />,
                 content: {
-                    summary: "Apunta con los ojos.",
-                    details: [
-                        { title: "Vision Center", text: "Es el punto en tu cara donde ves la línea recta real." },
-                        { title: "Entrada", text: "Párate detrás, visualiza la línea y camina hacia ella." }
-                    ],
-                    drills: [
-                        { type: 'off', title: 'Test Ojo', desc: "Descubre tu ojo dominante con un círculo en tus dedos." },
-                        { type: 'off', title: 'Línea Piso', desc: "Camina hacia una línea en el suelo. ¿Tu nariz cae sobre ella?" },
-                        { type: 'on', title: 'Tiro Ciego', desc: "Alineate, cierra ojos, tira. Si fallas, tu cuerpo apuntaba mal." },
-                        { type: 'on', title: 'Stop Shot', desc: "Tiro fuerte y recto. La blanca no debe girar ni desviarse." }
-                    ]
+                    summary: "Economía de Movimiento.",
+                    details: [{ title: "Línea de Tiro", text: "Visualiza de pie." }, { title: "Vision Center", text: "Ojo dominante." }],
+                    drills: [{ type: 'off', title: 'Entrada Perfecta', desc: "Cae en línea." }, { type: 'on', title: 'Tiro Ciego', desc: "Confía en tu cuerpo." }],
+                    evaluation: { question: "¿Cuándo alinear?", options: [{ text: "Agachado", correct: false, feedback: "Tarde." }, { text: "De pie", correct: true, feedback: "Sí!" }, { text: "En limajes", correct: false, feedback: "No." }] }
                 }
             },
             {
                 id: 'stroke', title: '4. Golpe', icon: <Icons.Stroke />,
                 content: {
-                    summary: "Un péndulo impulsado por gravedad.",
-                    details: [
-                        { title: "El Codo", text: "Es el único punto de pivote. Imagina que está clavado en el aire." },
-                        { title: "Aceleración", text: "No golpees la bola; atraviésala." }
-                    ],
-                    drills: [
-                        { type: 'off', title: 'Pared', desc: "Swings junto a pared. Si el codo toca, tienes 'Chicken Wing'." },
-                        { type: 'off', title: 'Botella Agua', desc: "Swing con botella medio llena." },
-                        { type: 'on', title: 'MOFUDAT', desc: "Tira a banda y regresa a la punta sin moverte." },
-                        { type: 'on', title: 'Largo Recorrido', desc: "Intenta tocar una 'bola fantasma' 10cm delante de la blanca." }
-                    ]
+                    summary: "Timing sobre Fuerza.",
+                    details: [{ title: "Aceleración", text: "Inicia suave, acelera." }, { title: "Pausa", text: "Micro-pausa atrás." }],
+                    drills: [{ type: 'on', title: 'MOFUDAT', desc: "Quieto tras el tiro." }, { type: 'on', title: 'Atravesar', desc: "Termina adelante." }],
+                    evaluation: { question: "¿Máxima velocidad?", options: [{ text: "Inicio", correct: false, feedback: "Jerk." }, { text: "Impacto", correct: false, feedback: "Cerca." }, { text: "Atravesando", correct: true, feedback: "Correcto." }] }
                 }
             },
             {
                 id: 'physics', title: '5. Física', icon: <Icons.Physics />, isSimulator: true,
                 content: {
                     summary: "Geometría sagrada.",
-                    details: [
-                        { title: "Tangente 90°", text: "Sin efecto, la blanca siempre sale a 90°." },
-                        { title: "Bola Fantasma", text: "Visualiza el círculo gris donde debe impactar la blanca." }
-                    ],
-                    drills: [
-                        { type: 'on', title: 'Reloj', desc: "Blanca al centro, bolas alrededor." },
-                        { type: 'on', title: 'Wagon Wheel', desc: "Lleva la blanca a cada tronera tras el impacto." }
-                    ]
+                    details: [{ title: "Tangente 90°", text: "Sin efecto sale a 90°." }, { title: "Fantasma", text: "Visualiza el choque." }],
+                    drills: [{ type: 'on', title: 'Wagon Wheel', desc: "Domina salidas." }],
+                    evaluation: { question: "Ángulo de salida sin efecto", options: [{ text: "45°", correct: false, feedback: "No." }, { text: "90°", correct: true, feedback: "Línea Tangente." }, { text: "Sigue recto", correct: false, feedback: "Solo con Top." }] }
                 }
             }
         ];
 
-        // --- COMPONENTE SIMULADOR ---
-        const SmartSimulator = ({ onLoadDrill }) => {
-            const TABLE_W = 600;
-            const TABLE_H = 300;
-            const BALL_R = 12;
-            const BORDER = 25; 
-            const PLAY_AREA_MARGIN = BALL_R; 
+        // --- COMPONENTE BOLA DE BILLAR ---
+        const BilliardBallBtn = ({ color, number, label, onClick, subIcon, size = 'large' }) => {
+            const sizeClass = size === 'large' ? 'w-24 h-24' : 'w-16 h-16';
+            const numSize = size === 'large' ? 'text-2xl' : 'text-lg';
+            
+            return (
+                <div className="flex flex-col items-center gap-2 group" onClick={onClick}>
+                    <div className={`pool-ball ${sizeClass} shadow-ball animate-roll-in`} style={{backgroundColor: color}}>
+                        <div className="ball-number">
+                            {subIcon ? subIcon : <span className={numSize}>{number}</span>}
+                        </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-white uppercase tracking-wider bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">{label}</span>
+                </div>
+            );
+        };
 
+        // --- PANTALLA DE LOGIN / GESTIÓN DE USUARIOS ---
+        const UserLogin = ({ onLogin, users, setUsers }) => {
+            const [newUser, setNewUser] = useState('');
+            const [view, setView] = useState('menu'); // 'menu', 'list', 'add'
+            const fileInputRef = useRef(null);
+
+            // Colores de bolas estándar
+            const ballColors = ['#facc15', '#1d4ed8', '#ef4444', '#7e22ce', '#f97316', '#15803d', '#881337', '#000000'];
+
+            const handleAddUser = () => {
+                if (newUser.trim()) {
+                    const newUserData = { name: newUser.trim(), id: Date.now() };
+                    setUsers([...users, newUserData]);
+                    setNewUser('');
+                    setView('list');
+                }
+            };
+
+            const handleDeleteUser = (id, e) => {
+                e.stopPropagation();
+                if (window.confirm("¿Borrar usuario?")) {
+                    setUsers(users.filter(u => u.id !== id));
+                }
+            };
+
+            const handleImportClick = () => fileInputRef.current.click();
+            const handleImportFile = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try { setUsers(JSON.parse(e.target.result)); alert("Importado!"); } catch (error) { alert("Error"); }
+                };
+                reader.readAsText(file);
+            };
+            const handleExport = () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(users));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "tiro_maestro_users.json");
+                document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove();
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center animate-felt-cycle felt-bg p-6 relative overflow-hidden">
+                    {/* Marco de madera de la mesa */}
+                    <div className="absolute inset-4 wood-texture rounded-3xl shadow-2xl pointer-events-none border-8 border-[#2a1e10]"></div>
+                    
+                    {/* Diamantes en el marco */}
+                    <div className="absolute top-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2"></div>
+                    <div className="absolute bottom-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2"></div>
+
+                    <div className="z-10 w-full max-w-2xl flex flex-col items-center">
+                        {/* Logo / Título */}
+                        <div className="bg-black/40 backdrop-blur-md px-8 py-4 rounded-full border border-white/10 mb-12 shadow-2xl flex flex-col items-center">
+                            <h1 className="text-4xl font-black text-white tracking-tighter drop-shadow-lg">TIRO MAESTRO</h1>
+                            <span className="text-emerald-400 text-xs font-bold uppercase tracking-[0.3em]">Técnica</span>
+                        </div>
+
+                        {view === 'menu' && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center">
+                                {/* Opción: Jugar (Lista de Usuarios) */}
+                                <BilliardBallBtn color="#facc15" number="1" label="Cargar" onClick={() => setView('list')} />
+                                
+                                {/* Opción: Crear */}
+                                <BilliardBallBtn color="#1d4ed8" subIcon={<Icons.Plus />} label="Crear" onClick={() => setView('add')} />
+                                
+                                {/* Opción: Invitado (Bola 8) */}
+                                <BilliardBallBtn color="#000000" number="8" label="Invitado" onClick={() => onLogin({ name: "Invitado", isGuest: true })} />
+                                
+                                {/* Herramientas (Import/Export) */}
+                                <div className="flex flex-col gap-4">
+                                    <div onClick={handleImportClick} className="cursor-pointer flex flex-col items-center group">
+                                        <div className="w-12 h-12 rounded-full bg-white border-4 border-red-600 shadow-ball flex items-center justify-center transform group-hover:scale-110 transition"><Icons.Upload /></div>
+                                        <span className="text-[9px] text-white font-bold bg-black/40 px-2 rounded mt-1">Import</span>
+                                    </div>
+                                    <div onClick={handleExport} className="cursor-pointer flex flex-col items-center group">
+                                        <div className="w-12 h-12 rounded-full bg-white border-4 border-purple-600 shadow-ball flex items-center justify-center transform group-hover:scale-110 transition"><Icons.Download /></div>
+                                        <span className="text-[9px] text-white font-bold bg-black/40 px-2 rounded mt-1">Export</span>
+                                    </div>
+                                    <input type="file" ref={fileInputRef} onChange={handleImportFile} className="hidden" accept=".json" />
+                                </div>
+                            </div>
+                        )}
+
+                        {view === 'list' && (
+                            <div className="w-full max-w-lg">
+                                <div className="flex flex-wrap gap-6 justify-center p-4">
+                                    {users.map((u, i) => (
+                                        <div key={u.id || i} className="relative group">
+                                            <BilliardBallBtn 
+                                                color={ballColors[i % 7]} // Ciclo de colores sólidas (1-7)
+                                                number={u.name.substring(0,2).toUpperCase()} 
+                                                label={u.name} 
+                                                onClick={() => onLogin(u)} 
+                                            />
+                                            <button 
+                                                onClick={(e) => handleDeleteUser(u.id, e)}
+                                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition shadow-md border border-white"
+                                            >
+                                                <Icons.Trash />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {users.length === 0 && <p className="text-white font-bold">No hay jugadores.</p>}
+                                </div>
+                                <button onClick={() => setView('menu')} className="mx-auto mt-8 block text-white/70 hover:text-white font-bold uppercase text-xs tracking-widest border-b border-transparent hover:border-white transition">← Volver al Menú</button>
+                            </div>
+                        )}
+
+                        {view === 'add' && (
+                            <div className="bg-black/50 backdrop-blur p-6 rounded-2xl border border-white/10 w-full max-w-sm animate-fade-in">
+                                <label className="block text-white text-xs font-bold uppercase mb-2">Nombre del Jugador</label>
+                                <input 
+                                    type="text" 
+                                    value={newUser} 
+                                    onChange={(e) => setNewUser(e.target.value)} 
+                                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-emerald-500 mb-4"
+                                    placeholder="Ej: Efren Reyes"
+                                    autoFocus
+                                />
+                                <div className="flex gap-2">
+                                    <button onClick={() => setView('menu')} className="flex-1 py-3 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20 transition">Cancelar</button>
+                                    <button onClick={handleAddUser} className="flex-1 py-3 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition shadow-lg">Crear</button>
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div className="absolute bottom-8 text-center w-full">
+                             <p className="text-[10px] text-white/40 font-medium">Desarrollado por <span className="text-emerald-400">Juan Miguel Rios Redondo</span></p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- COMPONENTE DE EVALUACIÓN (Interactivo) ---
+        const EvaluationCard = ({ data }) => {
+            const [selected, setSelected] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const handleSelect = (idx) => { if (showFeedback) return; setSelected(idx); setShowFeedback(true); };
+            const reset = () => { setSelected(null); setShowFeedback(false); };
+            useEffect(reset, [data]);
+            if (!data) return null;
+            return (
+                <div className="mt-6 bg-slate-100 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2 mb-3"><span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 p-1 rounded"><Icons.Check /></span><h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Evaluación Rápida</h3></div>
+                    <p className="text-sm font-medium mb-3 text-slate-700 dark:text-slate-300">{data.question}</p>
+                    <div className="space-y-2">
+                        {data.options.map((opt, idx) => {
+                            let itemClass = "w-full text-left p-3 rounded-lg text-xs font-bold transition flex justify-between items-center ";
+                            if (showFeedback) {
+                                if (idx === selected) itemClass += opt.correct ? "bg-emerald-100 text-emerald-800 border-2 border-emerald-500" : "bg-red-100 text-red-800 border-2 border-red-500";
+                                else if (opt.correct) itemClass += "bg-emerald-50 text-emerald-600 border border-emerald-200 opacity-70"; 
+                                else itemClass += "bg-white dark:bg-slate-800 text-slate-400 opacity-50";
+                            } else itemClass += "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700";
+                            return (<button key={idx} onClick={() => handleSelect(idx)} className={itemClass} disabled={showFeedback}>{opt.text}{showFeedback && idx === selected && (opt.correct ? <Icons.Check /> : <Icons.X />)}</button>);
+                        })}
+                    </div>
+                    {showFeedback && (<div className={`mt-3 text-xs p-2 rounded ${data.options[selected].correct ? 'text-emerald-700 bg-emerald-50' : 'text-red-700 bg-red-50'}`}><strong>Retroalimentación: </strong> {data.options[selected].feedback}{!data.options[selected].correct && <button onClick={reset} className="block mt-2 text-indigo-600 underline">Intentar de nuevo</button>}</div>)}
+                </div>
+            );
+        };
+
+        // --- SIMULADOR ---
+        const SmartSimulator = ({ onLoadDrill }) => {
+            const TABLE_W = 600, TABLE_H = 300, BALL_R = 12, BORDER = 25, PLAY_AREA_MARGIN = BALL_R; 
             const [cb, setCb] = useState({ x: 150, y: 150 });
             const [ob, setOb] = useState({ x: 400, y: 150 });
             const [aim, setAim] = useState({ x: 600, y: 150 });
             const [fixedAngle, setFixedAngle] = useState(null);
             const [cutSide, setCutSide] = useState(1);
-            
             const [sightPos, setSightPos] = useState({ x: 20, y: 20 });
             const [showScenarios, setShowScenarios] = useState(false);
-            
             const [spin, setSpin] = useState('center');
             const [speed, setSpeed] = useState(60);
             const [displayAngle, setDisplayAngle] = useState(0);
             const [isValid, setIsValid] = useState(true);
-
             const svgRef = useRef(null);
             const dragging = useRef(null);
             const containerRef = useRef(null);
-
             const presets = [0, 15, 30, 45, 60];
+            const scenarios = [
+                { name: "Recto a Esquina Sup", cb: {x:450, y:150}, ob:{x:550, y:50}, aim:{x:600, y:0}, desc: "Tiro directo." },
+                { name: "Recto al Centro", cb: {x:300, y:200}, ob:{x:300, y:50}, aim:{x:300, y:0}, desc: "Recto simple." },
+                { name: "Corte 30°", cb: {x:250, y:186}, ob:{x:400, y:100}, aim:{x:600, y:0}, desc: "Corte clásico." },
+                { name: "Fina 60°", cb: {x:200, y:100}, ob:{x:500, y:100}, aim:{x:600, y:0}, desc: "Corte fino." },
+                { name: "Largo Diagonal", cb: {x:50, y:280}, ob:{x:550, y:20}, aim:{x:600, y:0}, desc: "Mesa completa." },
+                { name: "Pegada a Banda", cb: {x:300, y:200}, ob:{x:450, y:288}, aim:{x:600, y:288}, desc: "Difícil." }
+            ];
 
-            useEffect(() => {
-                if(onLoadDrill) onLoadDrill.current = (s) => { 
-                    if(s){ setCb(s.cb); setOb(s.ob); setAim(s.aim); setFixedAngle(null); } 
-                };
-            }, [onLoadDrill]);
-
-            useEffect(() => {
-                if(containerRef.current) {
-                    const w = containerRef.current.offsetWidth;
-                    setSightPos({ x: w - 130, y: 10 });
-                }
-            }, []);
-
-            const loadScenario = (s) => {
-                setCb(s.cb); setOb(s.ob); setAim(s.aim);
-                setFixedAngle(null);
-                setShowScenarios(false);
-            };
-
+            useEffect(() => { if(onLoadDrill) onLoadDrill.current = (s) => { if(s){ setCb(s.cb); setOb(s.ob); setAim(s.aim); setFixedAngle(null); } }; }, [onLoadDrill]);
+            useEffect(() => { if(containerRef.current) { const w = containerRef.current.offsetWidth; setSightPos({ x: w - 130, y: 10 }); } }, []);
+            const loadScenario = (s) => { setCb(s.cb); setOb(s.ob); setAim(s.aim); setFixedAngle(null); setShowScenarios(false); };
             const calculateVectors = (c, o, a) => {
-                const dxOB = a.x - o.x, dyOB = a.y - o.y;
-                const dOB = Math.sqrt(dxOB*dxOB + dyOB*dyOB) || 1;
-                const ux = dxOB/dOB, uy = dyOB/dOB;
-                const gbX = o.x - (ux * BALL_R * 2);
-                const gbY = o.y - (uy * BALL_R * 2);
-                const dxAtt = gbX - c.x, dyAtt = gbY - c.y;
-                const ax = dxAtt/(Math.sqrt(dxAtt*dxAtt+dyAtt*dyAtt)||1), ay = dyAtt/(Math.sqrt(dxAtt*dxAtt+dyAtt*dyAtt)||1);
-                const dot = ax * ux + ay * uy;
-                const rad = Math.acos(Math.max(-1, Math.min(1, dot)));
-                const deg = (rad * 180) / Math.PI;
-                const cross = ax * uy - ay * ux;
-                const dir = cross < 0 ? 1 : -1;
-                const tx = -uy * dir, ty = ux * dir;
+                const dxOB = a.x - o.x, dyOB = a.y - o.y; const dOB = Math.sqrt(dxOB*dxOB + dyOB*dyOB) || 1;
+                const ux = dxOB/dOB, uy = dyOB/dOB; const gbX = o.x - (ux * BALL_R * 2), gbY = o.y - (uy * BALL_R * 2);
+                const dxAtt = gbX - c.x, dyAtt = gbY - c.y; const ax = dxAtt/(Math.sqrt(dxAtt*dxAtt+dyAtt*dyAtt)||1), ay = dyAtt/(Math.sqrt(dxAtt*dxAtt+dyAtt*dyAtt)||1);
+                const dot = ax * ux + ay * uy; const rad = Math.acos(Math.max(-1, Math.min(1, dot))); const deg = (rad * 180) / Math.PI;
+                const cross = ax * uy - ay * ux; const dir = cross < 0 ? 1 : -1; const tx = -uy * dir, ty = ux * dir;
                 return { gbX, gbY, deg, rad, tx, ty, ux, uy, dir };
             };
-
             const updateSimulation = (c, o, a) => {
-                const data = calculateVectors(c, o, a);
-                setDisplayAngle(data.deg);
-                const m = PLAY_AREA_MARGIN; 
+                const data = calculateVectors(c, o, a); setDisplayAngle(data.deg); const m = PLAY_AREA_MARGIN; 
                 setIsValid(c.x >= m && c.x <= TABLE_W-m && c.y >= m && c.y <= TABLE_H-m && o.x >= m && o.x <= TABLE_W-m && o.y >= m && o.y <= TABLE_H-m && data.deg <= 88);
             };
-
             useEffect(() => updateSimulation(cb, ob, aim), [cb, ob, aim]);
-
             const applyPreset = (deg, forceToggle = false) => {
-                let newSide = cutSide;
-                if (fixedAngle === deg || forceToggle) newSide = cutSide * -1;
-                setFixedAngle(deg);
-                setCutSide(newSide);
-                const dx = aim.x - ob.x, dy = aim.y - ob.y;
-                const dOB = Math.sqrt(dx*dx + dy*dy) || 1;
-                const ux = dx/dOB, uy = dy/dOB;
-                const gbX = ob.x - (ux * BALL_R * 2), gbY = ob.y - (uy * BALL_R * 2);
-                const impactAngle = Math.atan2(uy, ux);
-                const rad = (deg * Math.PI / 180);
-                const approachAngle = impactAngle + Math.PI + (rad * newSide);
-                
-                let dist = 200;
-                let nx = gbX + dist * Math.cos(approachAngle);
-                let ny = gbY + dist * Math.sin(approachAngle);
-                
+                let newSide = cutSide; if (fixedAngle === deg || forceToggle) newSide = cutSide * -1; setFixedAngle(deg); setCutSide(newSide);
+                const dx = aim.x - ob.x, dy = aim.y - ob.y; const dOB = Math.sqrt(dx*dx + dy*dy) || 1; const ux = dx/dOB, uy = dy/dOB;
+                const gbX = ob.x - (ux * BALL_R * 2), gbY = ob.y - (uy * BALL_R * 2); const impactAngle = Math.atan2(uy, ux);
+                const rad = (deg * Math.PI / 180); const approachAngle = impactAngle + Math.PI + (rad * newSide);
+                let dist = 200; let nx = gbX + dist * Math.cos(approachAngle); let ny = gbY + dist * Math.sin(approachAngle);
                 const m = PLAY_AREA_MARGIN;
-                if(nx < m || nx > TABLE_W-m || ny < m || ny > TABLE_H-m) {
-                    dist = 100;
-                    nx = gbX + dist * Math.cos(approachAngle);
-                    ny = gbY + dist * Math.sin(approachAngle);
-                }
-                nx = Math.max(m, Math.min(TABLE_W-m, nx));
-                ny = Math.max(m, Math.min(TABLE_H-m, ny));
-
-                setCb({ x: nx, y: ny });
+                if(nx < m || nx > TABLE_W-m || ny < m || ny > TABLE_H-m) { dist = 100; nx = gbX + dist * Math.cos(approachAngle); ny = gbY + dist * Math.sin(approachAngle); }
+                nx = Math.max(m, Math.min(TABLE_W-m, nx)); ny = Math.max(m, Math.min(TABLE_H-m, ny)); setCb({ x: nx, y: ny });
             };
-
-            useEffect(() => {
-                if (fixedAngle !== null && dragging.current !== 'cb') {
-                    applyPreset(fixedAngle);
-                }
-            }, [ob, aim]);
-
+            useEffect(() => { if (fixedAngle !== null && dragging.current !== 'cb') { applyPreset(fixedAngle); } }, [ob, aim]);
             const getPathData = () => {
-                const v = calculateVectors(cb, ob, aim);
-                const maxLen = 600 * (speed / 100); 
-                const stunX = v.gbX + v.tx * maxLen;
-                const stunY = v.gbY + v.ty * maxLen;
-                let pathD = "";
-                
+                const v = calculateVectors(cb, ob, aim); const maxLen = 600 * (speed / 100); const stunX = v.gbX + v.tx * maxLen, stunY = v.gbY + v.ty * maxLen; let pathD = "";
                 const getBounce = (x1, y1, x2, y2) => {
-                    let tx = x2, ty = y2, hit = false;
-                    const m = PLAY_AREA_MARGIN;
-                    if(tx > TABLE_W-m) { tx=TABLE_W-m; ty=y1+(y2-y1)*((TABLE_W-m-x1)/(x2-x1)); hit=true; }
-                    else if(tx < m) { tx=m; ty=y1+(y2-y1)*((m-x1)/(x2-x1)); hit=true; }
-                    if(ty > TABLE_H-m) { ty=TABLE_H-m; tx=x1+(x2-x1)*((TABLE_H-m-y1)/(y2-y1)); hit=true; }
-                    else if(ty < m) { ty=m; tx=x1+(x2-x1)*((m-y1)/(y2-y1)); hit=true; }
+                    let tx = x2, ty = y2, hit = false; const m = PLAY_AREA_MARGIN;
+                    if(tx > TABLE_W-m) { tx=TABLE_W-m; ty=y1+(y2-y1)*((TABLE_W-m-x1)/(x2-x1)); hit=true; } else if(tx < m) { tx=m; ty=y1+(y2-y1)*((m-x1)/(x2-x1)); hit=true; }
+                    if(ty > TABLE_H-m) { ty=TABLE_H-m; tx=x1+(x2-x1)*((TABLE_H-m-y1)/(y2-y1)); hit=true; } else if(ty < m) { ty=m; tx=x1+(x2-x1)*((m-y1)/(y2-y1)); hit=true; }
                     return {x:tx, y:ty, hit};
                 };
-
                 if (spin === 'center') {
-                    const b = getBounce(v.gbX, v.gbY, stunX, stunY);
-                    pathD = `M ${v.gbX} ${v.gbY} L ${b.x} ${b.y}`;
-                    if(b.hit) {
-                        const m = PLAY_AREA_MARGIN;
-                        const remX = (stunX - b.x) * (b.x===m||b.x===TABLE_W-m?-1:1);
-                        const remY = (stunY - b.y) * (b.y===m||b.y===TABLE_H-m?-1:1);
-                        pathD += ` L ${b.x + remX} ${b.y + remY}`;
-                    }
+                    const b = getBounce(v.gbX, v.gbY, stunX, stunY); pathD = `M ${v.gbX} ${v.gbY} L ${b.x} ${b.y}`;
+                    if(b.hit) { const m = PLAY_AREA_MARGIN; const remX = (stunX - b.x) * (b.x===m||b.x===TABLE_W-m?-1:1); const remY = (stunY - b.y) * (b.y===m||b.y===TABLE_H-m?-1:1); pathD += ` L ${b.x + remX} ${b.y + remY}`; }
                 } else {
-                    const cpDist = 30 + (speed * 0.5);
-                    const cpX = v.gbX + v.tx * cpDist, cpY = v.gbY + v.ty * cpDist;
-                    const bend = 80;
-                    let endX, endY;
-                    if (spin === 'top') {
-                        endX = stunX + (v.ux * bend * (speed/60));
-                        endY = stunY + (v.uy * bend * (speed/60));
-                    } else {
-                        endX = stunX - (v.ux * bend * ((120-speed)/80));
-                        endY = stunY - (v.uy * bend * ((120-speed)/80));
-                    }
+                    const cpDist = 30 + (speed * 0.5); const cpX = v.gbX + v.tx * cpDist, cpY = v.gbY + v.ty * cpDist; const bend = 80; let endX, endY;
+                    if (spin === 'top') { endX = stunX + (v.ux * bend * (speed/60)); endY = stunY + (v.uy * bend * (speed/60)); } else { endX = stunX - (v.ux * bend * ((120-speed)/80)); endY = stunY - (v.uy * bend * ((120-speed)/80)); }
                     pathD = `M ${v.gbX} ${v.gbY} Q ${cpX} ${cpY} ${endX} ${endY}`;
                 }
                 return pathD;
             };
-
             const handleDrag = (e, type) => {
-                const rect = containerRef.current.getBoundingClientRect();
-                const isTouch = e.type.includes('touch');
-                const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-                const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-
-                if (type === 'sight') {
-                    const lx = clientX - rect.left - 50; 
-                    const ly = clientY - rect.top - 50;
-                    const maxX = rect.width - 100, maxY = rect.height - 100;
-                    setSightPos({ x: Math.max(0, Math.min(maxX, lx)), y: Math.max(0, Math.min(maxY, ly)) });
-                    return;
-                }
-
-                const CTM = svgRef.current.getScreenCTM();
-                const x = (clientX - CTM.e) / CTM.a, y = (clientY - CTM.f) / CTM.d;
-                
-                const p = BALL_R; 
-                const bx = Math.max(p, Math.min(TABLE_W-p, x)), by = Math.max(p, Math.min(TABLE_H-p, y));
-
-                if (type === 'cb') { setCb({x:bx, y:by}); setFixedAngle(null); }
-                else if (type === 'ob') {
-                    const dx = aim.x - ob.x, dy = aim.y - ob.y;
-                    setOb({x:bx, y:by}); setAim({x:bx+dx, y:by+dy});
-                } else if (type === 'aim') { setAim({x, y}); }
+                const rect = containerRef.current.getBoundingClientRect(); const isTouch = e.type.includes('touch'); const clientX = isTouch ? e.touches[0].clientX : e.clientX; const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+                if (type === 'sight') { const lx = clientX - rect.left - 50; const ly = clientY - rect.top - 50; const maxX = rect.width - 100, maxY = rect.height - 100; setSightPos({ x: Math.max(0, Math.min(maxX, lx)), y: Math.max(0, Math.min(maxY, ly)) }); return; }
+                const CTM = svgRef.current.getScreenCTM(); const x = (clientX - CTM.e) / CTM.a, y = (clientY - CTM.f) / CTM.d; const p = BALL_R; const bx = Math.max(p, Math.min(TABLE_W-p, x)), by = Math.max(p, Math.min(TABLE_H-p, y));
+                if (type === 'cb') { setCb({x:bx, y:by}); setFixedAngle(null); } else if (type === 'ob') { const dx = aim.x - ob.x, dy = aim.y - ob.y; setOb({x:bx, y:by}); setAim({x:bx+dx, y:by+dy}); } else if (type === 'aim') { setAim({x, y}); }
             };
-
             const startDrag = (e, type) => { if(e.cancelable) e.preventDefault(); dragging.current = type; document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove, {passive: false}); document.addEventListener('mouseup', onEnd); document.addEventListener('touchend', onEnd); };
             const onMove = (e) => { if(dragging.current) handleDrag(e, dragging.current); };
             const onEnd = () => { dragging.current = null; document.removeEventListener('mousemove', onMove); document.removeEventListener('touchmove', onMove); document.removeEventListener('mouseup', onEnd); document.removeEventListener('touchend', onEnd); };
-
-            const v = calculateVectors(cb, ob, aim);
-            const pathD = getPathData();
-            const sysColor = isValid ? "#ffffff" : "#ef4444";
-            
-            let cutName = "Manual";
-            if (Math.abs(v.deg - 0) < 5) cutName = "Llena (Full)";
-            else if (Math.abs(v.deg - 15) < 5) cutName = "3/4 Bola";
-            else if (Math.abs(v.deg - 30) < 5) cutName = "1/2 Bola";
-            else if (Math.abs(v.deg - 45) < 5) cutName = "1/4 Bola";
-            else if (Math.abs(v.deg - 60) < 5) cutName = "Fina";
-            else if (v.deg > 75) cutName = "Roce";
-
+            const v = calculateVectors(cb, ob, aim); const pathD = getPathData(); const sysColor = isValid ? "#ffffff" : "#ef4444";
+            let cutName = "Manual"; if (Math.abs(v.deg - 0) < 5) cutName = "Llena"; else if (Math.abs(v.deg - 15) < 5) cutName = "3/4 Bola"; else if (Math.abs(v.deg - 30) < 5) cutName = "1/2 Bola"; else if (Math.abs(v.deg - 45) < 5) cutName = "1/4 Bola"; else if (Math.abs(v.deg - 60) < 5) cutName = "Fina"; else if (v.deg > 75) cutName = "Roce";
             const offsetPixels = 60 * Math.sin(v.rad);
 
             return (
                 <div className="flex flex-col gap-4 animate-fade-in pb-6 w-full" ref={containerRef} style={{position:'relative'}}>
-                    {/* PANEL SUPERIOR */}
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative">
-                        <div className="flex justify-between items-center mb-3">
-                            <div>
-                                <span className={`text-[10px] font-bold uppercase tracking-widest ${isValid?'text-slate-400':'text-red-500'}`}>{isValid ? "Ángulo de Corte" : "Tiro Imposible"}</span>
-                                <div className={`text-4xl font-mono font-bold ${isValid?'text-emerald-500':'text-red-500'}`}>{displayAngle.toFixed(0)}°</div>
-                            </div>
-                            <div className="flex gap-1">
-                                {presets.map(deg => (
-                                    <button key={deg} onClick={()=>applyPreset(deg)} className={`w-9 h-9 rounded flex flex-col items-center justify-center border transition-all ${fixedAngle===deg?'bg-emerald-600 text-white border-emerald-500 scale-105':'bg-slate-50 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}>
-                                        <span className="text-[10px] font-bold">{deg}°</span>
-                                    </button>
-                                ))}
+                        <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
+                            <div><span className={`text-[10px] font-bold uppercase tracking-widest ${isValid?'text-slate-400':'text-red-500'}`}>{isValid ? "Ángulo de Corte" : "Tiro Imposible"}</span><div className={`text-4xl font-mono font-bold ${isValid?'text-emerald-500':'text-red-500'}`}>{displayAngle.toFixed(0)}°</div></div>
+                            <div className="flex flex-wrap gap-1">
+                                {presets.map(deg => (<button key={deg} onClick={()=>applyPreset(deg)} className={`w-9 h-9 rounded flex flex-col items-center justify-center border transition-all ${fixedAngle===deg?'bg-emerald-600 text-white border-emerald-500 scale-105':'bg-slate-50 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}><span className="text-[10px] font-bold">{deg}°</span></button>))}
                                 <button onClick={()=>applyPreset(fixedAngle||30, true)} className="w-9 h-9 rounded flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-indigo-500"><Icons.Flip /></button>
                                 <button onClick={()=>setFixedAngle(null)} className={`w-9 h-9 rounded flex items-center justify-center ${fixedAngle===null?'bg-indigo-600 text-white':'bg-slate-50 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700'}`}><Icons.Unlock /></button>
                             </div>
                         </div>
-                        <div className="absolute top-4 right-4">
-                             <button onClick={()=>setShowScenarios(!showScenarios)} className="flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-xs font-bold hover:bg-indigo-200 transition"><Icons.Folder /> Cargar Tiro</button>
-                        </div>
-                        {showScenarios && (
-                            <div className="absolute top-12 right-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-2 w-56 max-h-64 overflow-y-auto">
-                                {scenarios.map((s,i) => <button key={i} onClick={()=>loadScenario(s)} className="w-full text-left text-xs p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-200 block border-b border-slate-100 dark:border-slate-700 last:border-0"><div className="font-bold">{s.name}</div><div className="text-[9px] opacity-70">{s.desc}</div></button>)}
-                            </div>
-                        )}
+                        <div className="absolute top-4 right-4"><button onClick={()=>setShowScenarios(!showScenarios)} className="flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-xs font-bold hover:bg-indigo-200 transition"><Icons.Folder /> Cargar Tiro</button></div>
+                        {showScenarios && (<div className="absolute top-12 right-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-2 w-56 max-h-64 overflow-y-auto">{scenarios.map((s,i) => <button key={i} onClick={()=>loadScenario(s)} className="w-full text-left text-xs p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-200 block border-b border-slate-100 dark:border-slate-700 last:border-0"><div className="font-bold">{s.name}</div><div className="text-[9px] opacity-70">{s.desc}</div></button>)}</div>)}
                     </div>
-
                     <div className="relative">
-                        {/* LUPA MEJORADA */}
-                        <div className="absolute cursor-move touch-none z-[100]" style={{left:sightPos.x, top:sightPos.y}} onMouseDown={(e)=>startDrag(e,'sight')} onTouchStart={(e)=>startDrag(e,'sight')}>
-                            <div className="glass rounded-full w-28 h-28 shadow-2xl flex items-center justify-center overflow-hidden relative group">
-                                <div className="absolute top-1 right-2 text-slate-500/50"><Icons.Move /></div>
-                                {/* Roja con Guías */}
-                                <div className="absolute w-[60px] h-[60px] rounded-full bg-red-600 border-2 border-red-800 shadow-inner flex justify-center items-center">
-                                    <div className="w-[1px] h-full bg-white/40 absolute"></div> {/* Centro */}
-                                </div>
-                                {/* Blanca superpuesta */}
-                                <div className="absolute w-[60px] h-[60px] rounded-full border-2 border-white/90 bg-white/10" style={{transform:`translateX(${v.dir * -offsetPixels}px)`}}>
-                                    <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-                                </div>
-                                <div className="absolute bottom-2 w-full text-center flex flex-col items-center">
-                                    <div className="text-[8px] text-slate-800 dark:text-slate-200 uppercase font-bold tracking-wider px-1 rounded mt-0.5 backdrop-blur-sm">{cutName}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* MESA SVG CON BORDE DE MADERA */}
+                        <div className="absolute cursor-move touch-none z-[100]" style={{left:sightPos.x, top:sightPos.y}} onMouseDown={(e)=>startDrag(e,'sight')} onTouchStart={(e)=>startDrag(e,'sight')}><div className="glass rounded-full w-28 h-28 shadow-2xl flex items-center justify-center overflow-hidden relative group"><div className="absolute top-1 right-2 text-slate-500/50"><Icons.Move /></div><div className="absolute w-[60px] h-[60px] rounded-full bg-red-600 border-2 border-red-800 shadow-inner flex justify-center items-center"><div className="w-[1px] h-full bg-white/40 absolute"></div></div><div className="absolute w-[60px] h-[60px] rounded-full border-2 border-white/90 bg-white/10" style={{transform:`translateX(${v.dir * -offsetPixels}px)`}}><div className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div></div><div className="absolute bottom-2 w-full text-center flex flex-col items-center"><div className="text-[8px] text-slate-800 dark:text-slate-200 uppercase font-bold tracking-wider px-1 rounded mt-0.5 backdrop-blur-sm">{cutName}</div></div></div></div>
                         <div className={`relative rounded-lg overflow-hidden transition-all duration-300 shadow-2xl ${isValid?'shadow-black/50':'shadow-red-500/50 ring-4 ring-red-500/30'}`}>
-                            {/* ViewBox calculado con bordes */}
-                            <svg ref={svgRef} viewBox={`-${BORDER} -${BORDER} ${TABLE_W+BORDER*2} ${TABLE_H+BORDER*2}`} className="w-full h-auto bg-stone-900 touch-none cursor-crosshair">
-                                <defs>
-                                    <marker id="arrow" orient="auto" markerWidth="3" markerHeight="3" refX="0.1" refY="1.5"><path d="M0,0 V3 L3,1.5 Z" fill={sysColor}/></marker>
-                                </defs>
-                                
-                                <rect x={-BORDER} y={-BORDER} width={TABLE_W+BORDER*2} height={TABLE_H+BORDER*2} rx="8" className="wood-texture" stroke="#2a1e10" strokeWidth="2"/>
-                                <rect x="0" y="0" width={TABLE_W} height={TABLE_H} rx="4" className="fill-felt dark:fill-feltDark shadow-felt"/>
-                                
-                                {[0,1,2,3,4,5].map(i=><circle key={i} cx={[{x:0,y:0},{x:TABLE_W/2,y:0},{x:TABLE_W,y:0},{x:0,y:TABLE_H},{x:TABLE_W/2,y:TABLE_H},{x:TABLE_W,y:TABLE_H}][i].x} cy={[{x:0,y:0},{x:TABLE_W/2,y:0},{x:TABLE_W,y:0},{x:0,y:TABLE_H},{x:TABLE_W/2,y:TABLE_H},{x:TABLE_W,y:TABLE_H}][i].y} r={18} fill="#0f0f0f"/>)}
-                                
-                                {[1,2,3, 5,6,7].map(i => <circle key={`d-top-${i}`} cx={TABLE_W * (i/4) - (i>3?TABLE_W:0)} cy={-BORDER/2} r={3} fill="#d4d4d8" opacity="0.8"/>)}
-                                
-                                <line x1={ob.x} y1={ob.y} x2={aim.x} y2={aim.y} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,4" opacity="0.5"/>
-                                
-                                <circle cx={v.gbX} cy={v.gbY} r={BALL_R} fill="none" stroke="white" strokeWidth="1" strokeDasharray="3,2" opacity="0.6"/>
-                                
-                                <line x1={cb.x} y1={cb.y} x2={v.gbX} y2={v.gbY} stroke={sysColor} strokeWidth="2" opacity="0.7"/>
-                                <path d={pathD} fill="none" stroke={sysColor} strokeWidth="3" markerEnd="url(#arrow)" opacity="0.9"/>
-                                
-                                <g transform={`translate(${ob.x},${ob.y})`} onMouseDown={(e)=>startDrag(e,'ob')} onTouchStart={(e)=>startDrag(e,'ob')} className="cursor-grab">
-                                    <circle r={40} fill="transparent"/>
-                                    <circle r={BALL_R} fill="#ef4444" stroke="black" strokeWidth="1"/>
-                                    <circle r={BALL_R-4} fill="none" stroke="white" strokeWidth="1" opacity="0.2" transform="rotate(-45)"/>
-                                </g>
-                                <g transform={`translate(${aim.x},${aim.y})`} onMouseDown={(e)=>startDrag(e,'aim')} onTouchStart={(e)=>startDrag(e,'aim')} className="cursor-pointer">
-                                    <circle r={25} fill="transparent"/>
-                                    <circle r={6} fill="none" stroke="white" strokeWidth="2" opacity="0.8"/>
-                                    <circle r={2} fill="#ef4444"/>
-                                </g>
-                                <g transform={`translate(${cb.x},${cb.y})`} onMouseDown={(e)=>startDrag(e,'cb')} onTouchStart={(e)=>startDrag(e,'cb')} className={`cursor-grab ${fixedAngle ? 'smooth-move' : ''}`}>
-                                    <circle r={40} fill="transparent"/>
-                                    <circle r={BALL_R} fill="white" stroke={isValid?"#d4d4d8":"#ef4444"} strokeWidth="1"/>
-                                    <circle r={4} fill="#e2e8f0"/>
-                                </g>
-                            </svg>
+                            <svg ref={svgRef} viewBox={`-${BORDER} -${BORDER} ${TABLE_W+BORDER*2} ${TABLE_H+BORDER*2}`} className="w-full h-auto bg-stone-900 touch-none cursor-crosshair"><defs><marker id="arrow" orient="auto" markerWidth="3" markerHeight="3" refX="0.1" refY="1.5"><path d="M0,0 V3 L3,1.5 Z" fill={sysColor}/></marker></defs><rect x={-BORDER} y={-BORDER} width={TABLE_W+BORDER*2} height={TABLE_H+BORDER*2} rx="8" className="wood-texture" stroke="#2a1e10" strokeWidth="2"/><rect x="0" y="0" width={TABLE_W} height={TABLE_H} rx="4" className="fill-felt dark:fill-feltDark shadow-felt"/>{[0,1,2,3,4,5].map(i=><circle key={i} cx={[{x:0,y:0},{x:TABLE_W/2,y:0},{x:TABLE_W,y:0},{x:0,y:TABLE_H},{x:TABLE_W/2,y:TABLE_H},{x:TABLE_W,y:TABLE_H}][i].x} cy={[{x:0,y:0},{x:TABLE_W/2,y:0},{x:TABLE_W,y:0},{x:0,y:TABLE_H},{x:TABLE_W/2,y:TABLE_H},{x:TABLE_W,y:TABLE_H}][i].y} r={18} fill="#0f0f0f"/>)}{[1,2,3, 5,6,7].map(i => <circle key={`d-top-${i}`} cx={TABLE_W * (i/4) - (i>3?TABLE_W:0)} cy={-BORDER/2} r={3} fill="#d4d4d8" opacity="0.8"/>)}<line x1={ob.x} y1={ob.y} x2={aim.x} y2={aim.y} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,4" opacity="0.5"/><circle cx={v.gbX} cy={v.gbY} r={BALL_R} fill="none" stroke="white" strokeWidth="1" strokeDasharray="3,2" opacity="0.6"/><line x1={cb.x} y1={cb.y} x2={v.gbX} y2={v.gbY} stroke={sysColor} strokeWidth="2" opacity="0.7"/><path d={pathD} fill="none" stroke={sysColor} strokeWidth="3" markerEnd="url(#arrow)" opacity="0.9"/><g transform={`translate(${ob.x},${ob.y})`} onMouseDown={(e)=>startDrag(e,'ob')} onTouchStart={(e)=>startDrag(e,'ob')} className="cursor-grab"><circle r={40} fill="transparent"/><circle r={BALL_R} fill="#ef4444" stroke="black" strokeWidth="1"/><circle r={BALL_R-4} fill="none" stroke="white" strokeWidth="1" opacity="0.2" transform="rotate(-45)"/></g><g transform={`translate(${aim.x},${aim.y})`} onMouseDown={(e)=>startDrag(e,'aim')} onTouchStart={(e)=>startDrag(e,'aim')} className="cursor-pointer"><circle r={25} fill="transparent"/><circle r={6} fill="none" stroke="white" strokeWidth="2" opacity="0.8"/><circle r={2} fill="#ef4444"/></g><g transform={`translate(${cb.x},${cb.y})`} onMouseDown={(e)=>startDrag(e,'cb')} onTouchStart={(e)=>startDrag(e,'cb')} className={`cursor-grab ${fixedAngle ? 'smooth-move' : ''}`}><circle r={40} fill="transparent"/><circle r={BALL_R} fill="white" stroke={isValid?"#d4d4d8":"#ef4444"} strokeWidth="1"/><circle r={4} fill="#e2e8f0"/></g></svg>
                         </div>
                     </div>
-
                     <div className="grid grid-cols-2 gap-4 h-32">
-                        <div className="bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase mb-2">Efecto</span>
-                            <div className="relative w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full border-4 border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
-                                <button onClick={()=>setSpin('top')} className={`absolute top-1 w-6 h-6 rounded-full transition-all ${spin==='top'?'bg-red-500 ring-2 ring-red-300 scale-110':'bg-slate-300/50 hover:bg-slate-400/50'}`}></button>
-                                <button onClick={()=>setSpin('center')} className={`absolute w-6 h-6 rounded-full transition-all ${spin==='center'?'bg-red-500 ring-2 ring-red-300 scale-110':'bg-slate-300/50 hover:bg-slate-400/50'}`}></button>
-                                <button onClick={()=>setSpin('bottom')} className={`absolute bottom-1 w-6 h-6 rounded-full transition-all ${spin==='bottom'?'bg-red-500 ring-2 ring-red-300 scale-110':'bg-slate-300/50 hover:bg-slate-400/50'}`}></button>
-                            </div>
-                            <span className="text-[9px] font-bold mt-1 text-emerald-600 dark:text-emerald-400 uppercase">{spin==='top'?'Corrido':spin==='center'?'Stun (Seco)':'Retroceso'}</span>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center">
-                            <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-4"><span>FUERZA</span><span className="text-indigo-500">{speed}%</span></div>
-                            <div className="h-full flex items-center"><input type="range" min="10" max="100" value={speed} onChange={(e)=>setSpeed(Number(e.target.value))} className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg accent-indigo-500 cursor-pointer"/></div>
-                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center"><span className="text-[10px] font-bold text-slate-400 uppercase mb-2">Efecto</span><div className="relative w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full border-4 border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center"><button onClick={()=>setSpin('top')} className={`absolute top-1 w-6 h-6 rounded-full transition-all ${spin==='top'?'bg-red-500 ring-2 ring-red-300 scale-110':'bg-slate-300/50 hover:bg-slate-400/50'}`}></button><button onClick={()=>setSpin('center')} className={`absolute w-6 h-6 rounded-full transition-all ${spin==='center'?'bg-red-500 ring-2 ring-red-300 scale-110':'bg-slate-300/50 hover:bg-slate-400/50'}`}></button><button onClick={()=>setSpin('bottom')} className={`absolute bottom-1 w-6 h-6 rounded-full transition-all ${spin==='bottom'?'bg-red-500 ring-2 ring-red-300 scale-110':'bg-slate-300/50 hover:bg-slate-400/50'}`}></button></div><span className="text-[9px] font-bold mt-1 text-emerald-600 dark:text-emerald-400 uppercase">{spin==='top'?'Corrido':spin==='center'?'Stun (Seco)':'Retroceso'}</span></div>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center"><div className="flex justify-between text-[10px] font-bold text-slate-400 mb-4"><span>FUERZA</span><span className="text-indigo-500">{speed}%</span></div><div className="h-full flex items-center"><input type="range" min="10" max="100" value={speed} onChange={(e)=>setSpeed(Number(e.target.value))} className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg accent-indigo-500 cursor-pointer"/></div></div>
                     </div>
                 </div>
             );
@@ -483,34 +485,63 @@
         const App = () => {
             const [dark, setDark] = useState(true);
             const [tab, setTab] = useState('stance');
+            const [currentUser, setCurrentUser] = useState(null);
+            const [users, setUsers] = useState([
+                {name: 'Efren Reyes', id: 1},
+                {name: 'Shane Van Boening', id: 2},
+                {name: 'Joshua Filler', id: 3}
+            ]);
             const drillLoader = useRef(null);
             
             useEffect(() => { document.documentElement.className = dark ? 'dark' : ''; }, [dark]);
-
-            // Safe Access: Evita que crashee si no encuentra datos
             const activeData = getCourseData(drillLoader).find(c => c.id === tab) || getCourseData(drillLoader)[0];
-            
-            const loadDrill = (setup) => { 
-                if (tab !== 'physics') setTab('physics'); 
-                setTimeout(() => { if (drillLoader.current) drillLoader.current(setup); }, 100); 
+            const loadDrill = (setup) => { if (tab !== 'physics') setTab('physics'); setTimeout(() => { if (drillLoader.current) drillLoader.current(setup); }, 100); };
+
+            const handleLogout = () => {
+                setCurrentUser(null);
             };
+
+            if (!currentUser) {
+                return (
+                    <div className="font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
+                        <UserLogin onLogin={setCurrentUser} users={users} setUsers={setUsers} />
+                        <button onClick={()=>setDark(!dark)} className="fixed top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition text-slate-500 dark:text-slate-400 z-50">{dark ? <Icons.Sun /> : <Icons.Moon />}</button>
+                    </div>
+                );
+            }
 
             return (
                 <div className="min-h-screen flex flex-col font-sans pb-12 bg-slate-100 dark:bg-slate-950">
                     <header className="sticky top-0 z-40 bg-emerald-950 text-white px-4 py-3 shadow-lg flex justify-between items-center border-b border-emerald-800">
-                        <div className="flex items-center gap-3"><div className="bg-emerald-800 p-2 rounded-full text-emerald-300 shadow-inner ring-1 ring-emerald-700"><Icons.Table /></div><div><h1 className="text-lg font-bold leading-none tracking-tight">Tiro Maestro V36.1</h1><span className="text-[9px] text-emerald-400 uppercase font-bold tracking-widest bg-emerald-900/50 px-1 rounded">Pro Fixed</span></div></div>
-                        <button onClick={()=>setDark(!dark)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition">{dark ? <Icons.Sun /> : <Icons.Moon />}</button>
+                        <div className="flex items-center gap-3">
+                            <div className="bg-emerald-800 p-2 rounded-full text-emerald-300 shadow-inner ring-1 ring-emerald-700"><Icons.Table /></div>
+                            <div>
+                                <h1 className="text-lg font-bold leading-none tracking-tight">Tiro Maestro (Técnica)</h1>
+                                <span className="text-[10px] text-emerald-400 font-medium">Por Juan Miguel Rios Redondo</span>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="hidden sm:flex flex-col items-end mr-2">
+                                <span className="text-[10px] uppercase text-emerald-400 font-bold">Jugador</span>
+                                <span className="text-xs font-bold">{currentUser.name}</span>
+                            </div>
+                            <button onClick={handleLogout} className="p-2 bg-white/5 rounded-full hover:bg-red-500/20 text-slate-200 hover:text-red-300 transition" title="Cambiar Usuario"><Icons.LogOut /></button>
+                            <button onClick={()=>setDark(!dark)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition">{dark ? <Icons.Sun /> : <Icons.Moon />}</button>
+                        </div>
                     </header>
                     <main className="flex-1 p-4 w-full max-w-2xl mx-auto flex flex-col gap-4">
-                        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">{getCourseData().map(c => <button key={c.id} onClick={()=>setTab(c.id)} className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition border ${tab===c.id ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-900/20' : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'}`}>{c.icon} {c.title}</button>)}</div>
+                        <div className="flex gap-2 overflow-x-auto pb-2 w-full pr-4 scroller">
+                            {getCourseData().map(c => (
+                                <button key={c.id} onClick={()=>setTab(c.id)} className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition border ${tab===c.id ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-900/20' : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'}`}>{c.icon} {c.title}</button>
+                            ))}
+                        </div>
                         <div className="animate-fade-in flex flex-col gap-4">
                             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
                                 <h2 className="text-xl font-bold mb-3 flex items-center gap-2 text-slate-800 dark:text-white">{activeData.title}</h2>
                                 <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-l-4 border-emerald-500 pl-4 mb-5">{activeData.content.summary}</p>
-                                
                                 {activeData.content.details && <div className="grid gap-3 mb-4">{activeData.content.details.map((d,i) => <div key={i} className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg"><h4 className="text-xs font-bold text-indigo-500 uppercase mb-1">{d.title}</h4><p className="text-sm text-slate-700 dark:text-slate-300">{d.text}</p></div>)}</div>}
-
                                 {activeData.content.drills && activeData.content.drills.length > 0 && <div className="grid gap-3"><div className="text-xs font-bold text-slate-400 uppercase mt-2">Ejercicios Prácticos</div>{activeData.content.drills.map((drill, idx) => <div key={idx} className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 p-4 rounded-xl"><div className="flex justify-between items-start mb-2"><div className="flex items-center gap-2"><span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${drill.type === 'off' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{drill.type === 'off' ? <span className="flex items-center gap-1"><Icons.Home /> Casa</span> : <span className="flex items-center gap-1"><Icons.Table /> Mesa</span>}</span><h4 className="font-bold text-indigo-900 dark:text-indigo-200 text-sm">{drill.title}</h4></div>{drill.setup && <button onClick={()=>loadDrill(drill.setup)} className="text-[10px] font-bold bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1 hover:bg-indigo-700 transition"><Icons.Play /> Cargar</button>}</div><p className="text-sm text-slate-600 dark:text-slate-400">{drill.desc}</p></div>)}</div>}
+                                {activeData.content.evaluation && <EvaluationCard data={activeData.content.evaluation} />}
                             </div>
                             {activeData.isSimulator && <SmartSimulator onLoadDrill={drillLoader} />}
                         </div>
