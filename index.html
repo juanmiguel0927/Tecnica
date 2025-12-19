@@ -56,7 +56,7 @@
     <style>
         body { overscroll-behavior: none; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
         .touch-none { touch-action: none; }
-        .scroller::-webkit-scrollbar { height: 4px; }
+        .scroller::-webkit-scrollbar { height: 2px; } /* Scrollbar más fina */
         .scroller::-webkit-scrollbar-track { background: transparent; }
         .scroller::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark .scroller::-webkit-scrollbar-thumb { background: #334155; }
@@ -116,12 +116,12 @@
 
         // --- ICONOS COMPLETOS Y VERIFICADOS ---
         const Icons = {
-            Table: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="12" x="3" y="10" rx="2"/><circle cx="12" cy="16" r="2"/></svg>,
-            Stance: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
-            Grip: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>,
-            Eye: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>,
-            Stroke: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
-            Physics: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
+            Table: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="12" x="3" y="10" rx="2"/><circle cx="12" cy="16" r="2"/></svg>,
+            Stance: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
+            Grip: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>,
+            Eye: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>,
+            Stroke: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
+            Physics: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
             Sun: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
             Moon: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
             Unlock: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>,
@@ -137,7 +137,7 @@
             Trash: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
             Plus: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
             Home: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-            Quiz: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>,
+            Quiz: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>,
             ArrowRight: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         };
 
@@ -146,46 +146,66 @@
             {
                 id: 'stance', title: '1. Postura', icon: <Icons.Stance />,
                 content: {
-                    summary: "Estabilidad Biomecánica.",
-                    details: [{ title: "El Trípode", text: "Usa tus huesos, no tus músculos." }, { title: "Checklist", text: "1. Pie trasero perpendicular. 2. Rodilla recta." }],
-                    drills: [{ type: 'off', title: 'El Espejo', desc: "Cabeza sobre el taco." }, { type: 'on', title: 'Estatua', desc: "Congela el tiro." }],
-                    evaluation: { question: "¿Función de la pierna trasera?", options: [{ text: "Flexionarse", correct: false, feedback: "Incorrecto. La flexión causa inestabilidad." }, { text: "Estar recta", correct: true, feedback: "¡Correcto! Crea un pilar sólido." }, { text: "Moverse", correct: false, feedback: "Error." }] }
+                    summary: "Estabilidad Biomecánica: La base inamovible.",
+                    details: [
+                        { title: "El Trípode Estructural", text: "La estabilidad no viene de la fuerza muscular, sino de la estructura ósea. Distribuye el peso para que el pie trasero soporte la carga principal, mientras el puente y la pierna delantera estabilizan. Debes sentirte 'anclado' al suelo." },
+                        { title: "Alineación Corporal", text: "El pie trasero debe estar perpendicular a la línea de tiro. La pierna trasera recta (bloqueada sin hiperextensión) crea un pilar sólido. Si sientes tensión en los muslos, estás demasiado bajo o mal posicionado." },
+                        { title: "Sensación Clave", text: "Imagina que eres una mesa de tres patas. Si alguien te empujara suavemente del hombro mientras estás agachado, no deberías moverte. Debes sentir relajación total en la parte superior del cuerpo." }
+                    ],
+                    drills: [{ type: 'off', title: 'El Espejo', desc: "Mírate de frente: ¿Está tu barbilla sobre el taco? ¿Tu codo trasero está vertical?" }, { type: 'on', title: 'Estatua', desc: "Tira una bola fuerte y quédate congelado 5 segundos. Si te levantas o te tambaleas, tu postura falló." }],
+                    evaluation: { question: "¿Cuál es la función principal de la pierna trasera en la postura?", options: [{ text: "Flexionarse para impulsar", correct: false, feedback: "Incorrecto. La flexión causa inestabilidad vertical (pistoneo)." }, { text: "Estar recta y bloqueada (hueso sobre hueso)", correct: true, feedback: "¡Correcto! Esto crea un pilar sólido sin gasto muscular, permitiendo consistencia." }, { text: "Moverse durante el tiro", correct: false, feedback: "Error grave. Cualquier movimiento de piernas arruina la precisión." }] }
                 }
             },
             {
                 id: 'grip', title: '2. Agarre', icon: <Icons.Grip />,
                 content: {
-                    summary: "Energía Limpia.",
-                    details: [{ title: "Sin Fricción", text: "Imagina que el taco flota." }, { title: "Doble Péndulo", text: "Muñeca suelta." }],
-                    drills: [{ type: 'off', title: 'Pasta Dental', desc: "Swing suave." }, { type: 'on', title: 'Una Mano', desc: "Péndulo puro." }],
-                    evaluation: { question: "¿Si aprietas al impactar?", options: [{ text: "Más potencia", correct: false, feedback: "Falso." }, { text: "Desvío de punta", correct: true, feedback: "¡Exacto! Causa error vertical." }, { text: "Más precisión", correct: false, feedback: "Falso." }] }
+                    summary: "Energía Limpia: Transmisión sin interferencia.",
+                    details: [
+                        { title: "La Jaula del Pájaro", text: "Sostén el taco con la fuerza suficiente para que no se caiga, pero tan suave como para no aplastar un pájaro pequeño. Una presión excesiva tensa el antebrazo y desvía la punta del taco en el impacto." },
+                        { title: "El Doble Péndulo", text: "El agarre no es estático. Al ir hacia atrás, los dedos traseros se abren ligeramente; al ir hacia adelante, se cierran suavemente. Esto permite que la muñeca actúe como una segunda bisagra, generando fluidez y 'latigazo' natural." },
+                        { title: "Sensación Clave", text: "Debes sentir el peso del taco en las yemas de tus dedos, no en la palma. Siente cómo el taco quiere moverse hacia adelante por su propia inercia; tú solo lo guías." }
+                    ],
+                    drills: [{ type: 'off', title: 'La Botella', desc: "Mete la punta del taco en una botella vacía acostada sin tocar los bordes. Requiere relajación total." }, { type: 'on', title: 'Tiro Pluma', desc: "Empuja la bola blanca para que recorra solo 30cm. Si aprietas, saldrá disparada." }],
+                    evaluation: { question: "Si aprietas el taco justo al impactar la bola (Grip Clench), ¿qué sucede?", options: [{ text: "Generas más potencia", correct: false, feedback: "Falso. La tensión muscular frena la velocidad final del taco." }, { text: "La punta del taco se desvía", correct: true, feedback: "¡Exacto! Apretar activa músculos del antebrazo que mueven la punta arriba o abajo, causando error." }, { text: "Mejoras la precisión", correct: false, feedback: "Falso. La tensión es enemiga de la precisión." }] }
                 }
             },
             {
                 id: 'alignment', title: '3. Alineación', icon: <Icons.Eye />,
                 content: {
-                    summary: "Economía de Movimiento.",
-                    details: [{ title: "Línea de Tiro", text: "Visualiza de pie." }, { title: "Vision Center", text: "Ojo dominante." }],
-                    drills: [{ type: 'off', title: 'Entrada Perfecta', desc: "Cae en línea." }, { type: 'on', title: 'Tiro Ciego', desc: "Confía en tu cuerpo." }],
-                    evaluation: { question: "¿Cuándo alinear?", options: [{ text: "Agachado", correct: false, feedback: "Tarde." }, { text: "De pie", correct: true, feedback: "¡Sí! Antes de bajar." }, { text: "En limajes", correct: false, feedback: "No." }] }
+                    summary: "Economía de Movimiento: Apuntar antes de disparar.",
+                    details: [
+                        { title: "Visión Binocular", text: "Debes encontrar tu 'Vision Center'. Es el punto en tu cara donde ambos ojos convergen para ver una línea recta perfecta. Coloca ese punto (usualmente debajo de un ojo o la nariz) directamente sobre el taco." },
+                        { title: "La Entrada", text: "La puntería se hace de pie. Visualiza la línea fantasma que conecta la bola blanca con el objetivo. Da un paso hacia esa línea y baja el cuerpo DIRECTAMENTE sobre ella. Nunca ajustes la puntería estando ya agachado." },
+                        { title: "Sensación Clave", text: "Debes sentir que 'caes' dentro del tiro. Una vez abajo, la línea debe verse obvia. Si sientes la necesidad de torcer el cuello o mover el brazo para apuntar, levántate y empieza de nuevo." }
+                    ],
+                    drills: [{ type: 'off', title: 'Línea de Suelo', desc: "Párate frente a una línea en el piso. Baja hacia ella. ¿Tu nariz termina exactamente encima?" }, { type: 'on', title: 'Tiro Ciego', desc: "Alineate, cierra los ojos y tira. Si fallas, tu cuerpo no estaba alineado con tu mente." }],
+                    evaluation: { question: "¿Cuándo debes encontrar la línea de tiro definitiva?", options: [{ text: "Cuando ya estás agachado", correct: false, feedback: "Demasiado tarde. Ajustar abajo pierde la perspectiva global." }, { text: "Estando de pie, antes de caminar", correct: true, feedback: "¡Sí! La alineación ocurre de pie; la ejecución ocurre agachado." }, { text: "Mientras haces los limajes", correct: false, feedback: "No. Los limajes son para el ritmo, no para encontrar la línea." }] }
                 }
             },
             {
                 id: 'stroke', title: '4. Golpe', icon: <Icons.Stroke />,
                 content: {
-                    summary: "Timing sobre Fuerza.",
-                    details: [{ title: "Aceleración", text: "Inicia suave, acelera." }, { title: "Pausa", text: "Micro-pausa atrás." }],
-                    drills: [{ type: 'on', title: 'MOFUDAT', desc: "Quieto tras el tiro." }, { type: 'on', title: 'Atravesar', desc: "Termina adelante." }],
-                    evaluation: { question: "¿Máxima velocidad?", options: [{ text: "Inicio", correct: false, feedback: "Jerk." }, { text: "Impacto", correct: false, feedback: "Cerca." }, { text: "Atravesando", correct: true, feedback: "¡Correcto! Follow through." }] }
+                    summary: "Timing: Aceleración a través de la bola.",
+                    details: [
+                        { title: "El Péndulo Puro", text: "El codo es el único punto de pivote. Imagina que tu codo está clavado en una repisa invisible. El antebrazo cuelga y se balancea libremente. El hombro NO debe moverse." },
+                        { title: "Aceleración (Through)", text: "No golpees 'a' la bola blanca; golpea 'a través' de ella. Tu taco debe terminar su recorrido al menos 15-20cm más adelante de donde estaba la bola blanca. La máxima velocidad ocurre justo al atravesar la bola." },
+                        { title: "Sensación Clave", text: "Imagina que el taco es el arco de un violín. El movimiento debe ser una sola nota larga y suave, no un golpe seco de tambor. Siente la ausencia de choque." }
+                    ],
+                    drills: [{ type: 'on', title: 'MOFUDAT', desc: "MOtion, Finish, Until, DA, Table. Tira a la banda y espera congelado hasta que la bola regrese y toque tu punta." }, { type: 'on', title: 'Botella de Agua', desc: "Haz el swing con una botella de agua medio llena. El agua no debe agitarse violentamente." }],
+                    evaluation: { question: "¿Dónde debe estar el punto de máxima velocidad del taco?", options: [{ text: "Al inicio del movimiento", correct: false, feedback: "No. Eso es un golpe brusco (jerk) que desvía el tiro." }, { text: "Justo al contactar la bola", correct: false, feedback: "Cerca, pero idealmente sigue acelerando a través de la bola." }, { text: "Durante y después del impacto", correct: true, feedback: "¡Correcto! Debes atravesar la bola (Follow through) para asegurar una trayectoria recta." }] }
                 }
             },
             {
                 id: 'physics', title: '5. Física', icon: <Icons.Physics />, isSimulator: true,
                 content: {
-                    summary: "Geometría sagrada.",
-                    details: [{ title: "Tangente 90°", text: "Sin efecto sale a 90°." }, { title: "Fantasma", text: "Visualiza el choque." }],
-                    drills: [{ type: 'on', title: 'Wagon Wheel', desc: "Domina salidas." }],
-                    evaluation: { question: "Ángulo de salida sin efecto", options: [{ text: "45°", correct: false, feedback: "No." }, { text: "90°", correct: true, feedback: "Línea Tangente." }, { text: "Sigue recto", correct: false, feedback: "Solo con Top." }] }
+                    summary: "Geometría Sagrada: Juega con las leyes naturales.",
+                    details: [
+                        { title: "La Línea Tangente (90°)", text: "Es la ley más importante. Si la blanca golpea a otra bola sin efecto de rotación (stun shot), siempre saldrá despedida en un ángulo de 90 grados respecto a la trayectoria de la bola objetivo." },
+                        { title: "La Bola Fantasma", text: "Para embocar, debes visualizar dónde tiene que estar la bola blanca en el momento del impacto. Imagina una 'bola fantasma' pegada a la bola objetivo, exactamente en línea opuesta a la tronera. Ahí es donde debes apuntar el centro de tu blanca." },
+                        { title: "Sensación Clave", text: "Deja de ver bolas chocando. Empieza a ver líneas y ángulos en el paño. Siente que puedes predecir el futuro de la bola blanca antes de golpearla." }
+                    ],
+                    drills: [{ type: 'on', title: 'Stop Shot', desc: "Golpea fuerte al centro-abajo para que la blanca se detenga en seco al impactar una bola recta." }, { type: 'on', title: 'Wagon Wheel', desc: "Usa diferentes efectos para llevar la blanca a diferentes zonas desde el mismo tiro." }],
+                    evaluation: { question: "Si golpeas una bola de corte sin efecto (Stun), ¿en qué ángulo sale la blanca?", options: [{ text: "45 grados", correct: false, feedback: "Incorrecto." }, { text: "90 grados (Línea Tangente)", correct: true, feedback: "¡Fundamental! La blanca siempre viaja por la tangente a 90 grados del objetivo." }, { text: "Sigue a la bola objetivo", correct: false, feedback: "Solo si usas efecto corrido (Top spin)." }] }
                 }
             },
             {
@@ -249,6 +269,10 @@
                 if (window.confirm("¿Borrar usuario?")) {
                     setUsers(users.filter(u => u.id !== id));
                 }
+            };
+
+            const handleGuest = () => {
+                onLogin({ name: "Invitado", isGuest: true });
             };
 
             const handleImportClick = () => fileInputRef.current.click();
@@ -626,7 +650,7 @@
             const [dark, setDark] = useState(true);
             const [tab, setTab] = useState('stance');
             const [currentUser, setCurrentUser] = useState(null);
-            const [users, setUsers] = useState([]);
+            const [users, setUsers] = useState([]); // Empty list as requested
             const drillLoader = useRef(null);
             
             useEffect(() => { document.documentElement.className = dark ? 'dark' : ''; }, [dark]);
@@ -668,7 +692,7 @@
                     <main className="flex-1 p-4 w-full max-w-2xl mx-auto flex flex-col gap-4">
                         <div className="flex gap-2 overflow-x-auto pb-2 w-full pr-4 scroller">
                             {getCourseData().map(c => (
-                                <button key={c.id} onClick={()=>setTab(c.id)} className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition border ${tab===c.id ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-900/20' : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'}`}>{c.icon} {c.title}</button>
+                                <button key={c.id} onClick={()=>setTab(c.id)} className={`flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold whitespace-nowrap transition border ${tab===c.id ? 'bg-emerald-600 text-white border-emerald-500 shadow-sm' : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700'}`}>{c.icon} {c.title}</button>
                             ))}
                         </div>
                         <div className="animate-fade-in flex flex-col gap-4">
