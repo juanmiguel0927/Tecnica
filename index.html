@@ -2,1260 +2,523 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explorador de Armonía e Improvisación (Sistema Harris)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tiro Maestro V36 - Pro Fixed</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel para compilar JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .piano-container {
-            position: relative;
-            width: 100%;
-            height: 140px;
-            background-color: #333;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: inset 0 -2px 5px rgba(0,0,0,0.5);
-            padding-left: 5px;
-            padding-right: 5px;
-            box-sizing: border-box;
-        }
-        .key-group {
-            position: relative;
-            height: 100%;
-            display: flex;
-        }
-        .white-key {
-            background-color: white;
-            border: 1px solid #ccc;
-            border-top: none;
-            width: 40px;
-            height: 100%;
-            position: absolute;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            z-index: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 5px;
-            box-sizing: border-box;
-            color: #333;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        .black-key {
-            background-color: #333;
-            border: 1px solid #222;
-            border-top: none;
-            width: 25px;
-            height: 65%;
-            position: absolute;
-            top: 0;
-            z-index: 2;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-            border-radius: 0 0 3px 3px;
-        }
-        .highlighted { background-color: #f59e0b; }
-        .highlighted-bass { background-color: #0ea5e9; }
-        .highlighted-extra { background-color: #f43f5e; }
-        .highlighted-outline { background-color: #a3e635; color: black !important; }
-        
-        .white-key.highlighted { background-color: #f59e0b; color: white !important; }
-        .black-key.highlighted { background-color: #f59e0b; }
-        .white-key.highlighted-bass { background-color: #0ea5e9; color: white !important; }
-        .black-key.highlighted-bass { background-color: #0ea5e9; }
-        .white-key.highlighted-extra { background-color: #f43f5e; color: white !important; }
-        .black-key.highlighted-extra { background-color: #f43f5e; }
-        .white-key.highlighted-outline { background-color: #a3e635; color: black !important; }
-        .black-key.highlighted-outline { background-color: #a3e635; }
-        
-        .note-label {
-            display: none;
-        }
-        .note-display {
-            text-align: center;
-            color: #d4d4d8;
-            font-size: 0.875rem;
-            margin-top: 0.75rem;
-            min-height: 2.5rem;
-            line-height: 1.4;
-            word-break: break-word;
-        }
-        .nav-button:disabled, .control-button:disabled, #btn-play-outline:disabled, #btn-repeat-lick:disabled, #btn-save-lick:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .piano-scroll-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .tab-button-container { display: flex; flex-wrap: wrap; margin-bottom: 0; border-bottom: 1px solid #3f3f46; justify-content: center; }
-        .tab-button { padding: 0.75rem 1rem; border-radius: 0.5rem 0.5rem 0 0; background-color: #27272a; color: #d4d4d8; border: 1px solid #3f3f46; border-bottom: none; cursor: pointer; font-weight: 600; white-space: nowrap; font-size: 0.875rem; margin-bottom: -1px; }
-        @media (min-width: 640px) { .tab-button { padding: 0.75rem 1.5rem; font-size: 1rem; } }
-        .tab-button.active { background-color: #18181b; color: #fcd34d; border-bottom: 1px solid #18181b; position: relative; }
-        .tab-content { display: none; background-color: #18181b; padding: 1.5rem; border-radius: 0 0 0.5rem 0.5rem; border: 1px solid #3f3f46; border-top: none; margin-top: -1px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); margin-bottom: 1.5rem; }
-        .tab-content.active { display: block; }
-        .inv-button { background-color: #3f3f46; color: white; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: 0.375rem; flex: 1 1 0%; transition: background-color 0.2s; }
-        .inv-button:hover { background-color: #52525b; }
-        .page-section h2 { font-size: 1.25rem; text-align: center; color: #a1a1aa; margin-bottom: 1rem; }
-        .page-section h3 { font-size: 1.5rem; font-weight: 600; color: #e4e4e7; margin-bottom: 0.5rem; }
-        .page-section h4 { font-size: 1.125rem; font-weight: 600; color: #e4e4e7; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .page-section p { color: #d4d4d8; margin-bottom: 1rem; line-height: 1.6; }
-        .page-section label { display: block; font-size: 0.875rem; font-weight: 500; color: #a1a1aa; margin-bottom: 0.5rem; text-align: center; }
-        .page-section select { background-color: #27272a; border: 1px solid #3f3f46; color: white; font-size: 1rem; border-radius: 0.5rem; display: block; width: 100%; padding: 0.625rem; }
-        .page-section .piano-section { background-color: #27272a; padding: 1rem; border-radius: 0.5rem; margin-top: 1rem; }
-        .page-section .piano-section p.piano-label { font-size: 0.875rem; color: #a1a1aa; margin-bottom: 1rem; }
-        #page-improvisation h3 { font-size: 1.5rem; font-weight: 600; color: #fcd34d; margin-bottom: 1rem; border-bottom: 1px solid #3f3f46; padding-bottom: 0.5rem; }
-        #page-improvisation h4 { font-size: 1.125rem; font-weight: 600; color: #e4e4e7; margin-top: 1.5rem; margin-bottom: 0.75rem; }
-        #page-improvisation ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; color: #d4d4d8; }
-        #page-improvisation ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1rem; color: #d4d4d8; }
-        #page-improvisation li { margin-bottom: 0.5rem; }
-        #page-improvisation strong { color: #7dd3fc; }
-        #page-improvisation code { background-color: #27272a; padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-family: monospace; color: #fde047; }
-        .interactive-section { background-color: #18181b; padding: 1.5rem; border-radius: 0.5rem; margin-top: 2rem; border: 1px solid #3f3f46; }
-         #outline-grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
-         @media (min-width: 768px) { #outline-grid-container { grid-template-columns: repeat(4, 1fr); } }
-         .measure-box { background-color: #27272a; border: 1px solid #3f3f46; border-radius: 0.5rem; padding: 0.75rem; text-align: center; transition: all 0.2s; }
-         .measure-box.playing { background-color: #18181b; border-color: #a3e635; transform: scale(1.03); }
-         .measure-box h5 { font-size: 0.75rem; font-weight: 500; color: #a1a1aa; margin-bottom: 0.25rem; text-transform: uppercase; }
-         .measure-box p.chord { font-size: 1.125rem; font-weight: 700; color: #e4e4e7; }
-         .measure-box p.scale { font-size: 1.25rem; font-weight: 700; color: #a3e635; line-height: 1; margin-top: 0.25rem; margin-bottom: 0.5rem; }
-         .measure-box .play-measure-btn { background-color: #3f3f46; color: #a3e635; border: none; border-radius: 50%; width: 1.75rem; height: 1.75rem; font-size: 1.25rem; line-height: 1.75rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; }
-         .measure-box .play-measure-btn:hover { background-color: #52525b; }
-         .measure-box.span-2 { grid-column: span 2; }
-         
-         .sub-button {
-             display: block;
-             width: 100%;
-             background-color: #27272a;
-             border: 1px solid #3f3f46;
-             color: #e4e4e7;
-             padding: 0.75rem;
-             border-radius: 0.5rem;
-             text-align: left;
-             transition: all 0.2s;
-             margin-bottom: 0.5rem;
-         }
-         .sub-button:hover {
-             background-color: #3f3f46;
-             border-color: #52525b;
-         }
-         .sub-button strong {
-             color: #fcd34d; /* amber-400 */
-             font-weight: 600;
-         }
-         .sub-button span {
-             font-size: 0.875rem;
-             color: #a1a1aa; /* zinc-400 */
-         }
-    </style>
-</head>
-<body class="bg-zinc-900 text-zinc-100 font-sans p-4 md:p-8">
-
-    <div class="max-w-4xl mx-auto">
-        
-        <h1 class="text-3xl font-bold text-center mb-2 text-amber-400">Explorador de Armonía e Improvisación</h1>
-        <h2 class="text-xl text-center text-zinc-400 mb-6">Sistema de Barry Harris</h2>
-        
-        <div class="tab-button-container">
-            <button id="tab-btn-251" class="tab-button active" data-tab="page-251">
-                2-5-1
-            </button>
-            <button id="tab-btn-diminished" class="tab-button" data-tab="page-diminished">
-                Conceptos
-            </button>
-             <button id="tab-btn-outlines" class="tab-button" data-tab="page-outlines"> 
-                 Esquemas
-             </button>
-            <button id="tab-btn-improvisation" class="tab-button" data-tab="page-improvisation">
-                Improvisación
-            </button>
-            <button id="tab-btn-summary" class="tab-button" data-tab="page-summary">
-                Sustituciones
-            </button>
-        </div>
-
-        <div id="page-251" class="tab-content active page-section">
-            <h2>Sustituciones de Acordes 2-5-1</h2>
-
-            <div class="mb-6 max-w-xs mx-auto">
-                <label for="key-select-251">Selecciona la Tonalidad (I):</label>
-                <select id="key-select-251">
-                    <option value="C">C</option> <option value="Db">Db / C#</option> <option value="D">D</option> <option value="Eb">Eb</option>
-                    <option value="E">E</option> <option value="F" selected>F</option> <option value="Gb">Gb / F#</option> <option value="G">G</option>
-                    <option value="Ab">Ab</option> <option value="A">A</option> <option value="Bb">Bb</option> <option value="B">B / Cb</option>
-                </select>
-            </div>
-
-            <div class="bg-zinc-800 rounded-lg mb-6">
-                <h3 id="concept-title-251" class="text-2xl font-semibold text-white mb-2"></h3>
-                <p id="concept-subtitle-251" class="text-lg text-amber-400 mb-4"></p>
-                <p id="concept-description-251" class="text-zinc-300 mb-6"></p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <button id="btn-standard-251" class="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-3 px-4 rounded-lg flex-1 transition-all">Oír Acorde Estándar</button>
-                    <button id="btn-harris-251" class="bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 px-4 rounded-lg flex-1 transition-all">Oír Sustitución de Harris</button>
-                    <div id="inversion-controls-251" class="hidden w-full md:col-span-2 p-3 bg-zinc-700 rounded-lg -mt-4">
-                        <p class="text-sm text-center text-zinc-400 mb-2">Practicar Inversiones (solo acorde):</p>
-                        <div class="flex justify-around gap-2">
-                             <button id="btn-inv-0" class="inv-button">Fundamental</button> <button id="btn-inv-1" class="inv-button">1ra Inversión</button>
-                             <button id="btn-inv-2" class="inv-button">2da Inversión</button> <button id="btn-inv-3" class="inv-button">3ra Inversión</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="piano-section">
-                    <p class="piano-label">Visualizador de Teclado (Rango: C2 - C6)</p>
-                    <div class="piano-scroll-container"><div id="piano-container-251" class="piano-container"></div></div>
-                    <div id="note-display-251" class="note-display"></div>
-                    <div class="flex justify-start gap-4 mt-2 text-sm text-zinc-400">
-                        <div class="flex items-center"><div class="w-4 h-4 rounded bg-amber-500 mr-2"></div>Nota del Acorde</div>
-                        <div class="flex items-center"><div class="w-4 h-4 rounded bg-sky-500 mr-2"></div>Nota del Bajo</div>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-between items-center">
-                <button id="btn-prev-251" class="nav-button bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-6 rounded-lg transition-all">&larr; Anterior</button>
-                <div id="step-indicator-251" class="text-zinc-400"></div>
-                <button id="btn-next-251" class="nav-button bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-6 rounded-lg transition-all">Siguiente &rarr;</button>
-            </div>
-        </div>
-
-        <div id="page-diminished" class="tab-content page-section">
-            <h2>El Decodificador de Acordes Disminuidos</h2>
-            <div class="mb-6 max-w-sm mx-auto">
-                <label for="key-select-diminished">Selecciona una Familia Disminuida (Base):</label>
-                <select id="key-select-diminished">
-                    <option value="C" selected>Cdim7 (C, Eb, Gb, A)</option> <option value="Db">C#dim7 (C#, E, G, Bb)</option> <option value="D">Ddim7 (D, F, Ab, B)</option>
-                </select>
-            </div>
-            <div class="bg-zinc-800 rounded-lg mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
-                    <div class="bg-zinc-700 p-3 rounded-lg"><h4 class="text-sm font-semibold text-zinc-400">Familia "Arriba" (iiø)</h4><button id="btn-dim-up" class="w-full text-lg font-bold text-amber-400 py-2 px-3 rounded-lg hover:bg-zinc-600 transition-all"></button></div>
-                    <div class="bg-black border-2 border-amber-500 p-3 rounded-lg"><h4 class="text-sm font-semibold text-amber-400">Familia "Base" (dim7)</h4><button id="btn-dim-base" class="w-full text-lg font-bold text-white py-2 px-3 rounded-lg hover:bg-zinc-600 transition-all"></button></div>
-                    <div class="bg-zinc-700 p-3 rounded-lg"><h4 class="text-sm font-semibold text-zinc-400">FamilIA "Abajo" (V7)</h4><button id="btn-dim-down" class="w-full text-lg font-bold text-amber-400 py-2 px-3 rounded-lg hover:bg-zinc-600 transition-all"></button></div>
-                </div>
-                <p class="text-zinc-300 mb-6 text-center">Toma la familia "Base" y "toma prestada" una nota de las familias vecinas (arriba o abajo) para generar nuevos acordes.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-zinc-700 p-4 rounded-lg"><h4 class="text-lg font-semibold text-white mb-3 text-center">Generar Familia V7 (Bajar una nota)</h4><p class="text-sm text-zinc-400 text-center mb-3">Toma una nota de la "Base" y bájala 1/2 tono a una nota de la familia "Abajo".</p><div id="dominant-buttons-container" class="space-y-2"></div></div>
-                    <div class="bg-zinc-700 p-4 rounded-lg"><h4 class="text-lg font-semibold text-white mb-3 text-center">Generar Familia m7b5 (Subir una nota)</h4><p class="text-sm text-zinc-400 text-center mb-3">Toma una nota de la "Base" y súbela 1/2 tono a una nota de la familia "Arriba".</p><div id="m7b5-buttons-container" class="space-y-2"></div></div>
-                </div>
-                
-                <div class="bg-zinc-700 p-4 rounded-lg mt-6">
-                    <h4 class="text-lg font-semibold text-white mb-3 text-center">Las Escalas de 8 Notas (6 Diminished)</h4>
-                    <p class="text-sm text-zinc-400 text-center mb-4">El corazón del sistema: un acorde de 6ª (Mayor o Menor) combinado con un acorde disminuido.</p>
-                    <div class="mb-4 max-w-xs mx-auto"><label for="key-select-scales">Selecciona una Tónica:</label><select id="key-select-scales"><option value="C" selected>C</option><option value="Db">Db / C#</option><option value="D">D</option><option value="Eb">Eb</option><option value="E">E</option><option value="F">F</option><option value="Gb">Gb / F#</option><option value="G">G</option><option value="Ab">Ab</option><option value="A">A</option><option value="Bb">Bb</option><option value="B">B / Cb</option></select></div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-zinc-900 p-4 rounded-lg border border-zinc-700">
-                            <h5 class="text-lg font-semibold text-white mb-3 text-center">Major 6 Diminished</h5>
-                            <div class="space-y-2">
-                                <button id="btn-maj6-chord" class="w-full bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-3 rounded-lg text-center transition-all">Oír Acorde 6 (ej. C6)</button>
-                                <button id="btn-maj6-dim-chord" class="w-full bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-3 rounded-lg text-center transition-all">Oír Acorde dim (Relacionado)</button>
-                                <button id="btn-maj6-dim-scale" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-2 px-3 rounded-lg text-center transition-all">Oír Escala Completa</button>
-                            </div>
-                        </div>
-                        <div class="bg-zinc-900 p-4 rounded-lg border border-zinc-700">
-                             <h5 class="text-lg font-semibold text-white mb-3 text-center">minor 6 Diminished</h5>
-                             <div class="space-y-2">
-                                <button id="btn-min6-chord" class="w-full bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-3 rounded-lg text-center transition-all">Oír Acorde m6 (ej. Cm6)</button>
-                                <button id="btn-min6-dim-chord" class="w-full bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-3 rounded-lg text-center transition-all">Oír Acorde dim (Relacionado)</button>
-                                <button id="btn-min6-dim-scale" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-2 px-3 rounded-lg text-center transition-all">Oír Escala Completa</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="piano-section mt-6">
-                    <p class="piano-label">Visualizador de Teclado (Rango: C2 - C6)</p><div class="piano-scroll-container"><div id="piano-container-diminished" class="piano-container"></div></div>
-                    <div id="note-display-diminished" class="note-display"></div>
-                    <div class="flex justify-start gap-4 mt-2 text-sm text-zinc-400">
-                        <div class="flex items-center"><div class="w-4 h-4 rounded bg-amber-500 mr-2"></div>Acorde 6 (Maj/min)</div>
-                        <div class="flex items-center"><div class="w-4 h-4 rounded bg-rose-500 mr-2"></div>Acorde Diminished</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-         <div id="page-outlines" class="tab-content page-section">
-             <h2>Esquemas de Escalas (Outlines)</h2>
-             <p>Simplifica la armonía de un tema a movimientos V-I o escalas principales para practicar el "contorno" melódico según Barry Harris.</p>
- 
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 max-w-lg mx-auto">
-                  <div>
-                      <label for="outline-select">Selecciona un Esquema:</label>
-                      <select id="outline-select">
-                          <option value="blues" selected>Blues (12 compases)</option>
-                          <option value="rhythm">Rhythm Changes (32c)</option>
-                      </select>
-                  </div>
-                  <div>
-                      <label for="outline-key-select">Selecciona la Tonalidad:</label>
-                      <select id="outline-key-select">
-                          <option value="C">C</option> <option value="Db">Db / C#</option> <option value="D">D</option> <option value="Eb">Eb</option>
-                          <option value="E">E</option> <option value="F" selected>F</option> <option value="Gb">Gb / F#</option> <option value="G">G</option>
-                          <option value="Ab">Ab</option> <option value="A">A</option> <option value="Bb">Bb</option> <option value="B">B / Cb</option>
-                      </select>
-                  </div>
-             </div>
- 
-             <h4>Esquema Seleccionado: <span id="outline-name-display" class="text-amber-400"></span></h4>
-             <div id="outline-grid-container" class="mb-6">
-             </div>
- 
-             <div class="text-center mb-6">
-                 <button id="btn-play-outline" class="bg-lime-500 hover:bg-lime-400 text-zinc-900 font-bold py-3 px-6 rounded-lg transition-all">
-                     ▶ Reproducir Esquema Completo
-                 </button>
-             </div>
- 
-             <div class="piano-section">
-                 <p class="piano-label">Visualizador de Teclado (Rango: C2 - C6)</p>
-                 <div class="piano-scroll-container">
-                     <div id="piano-container-outlines" class="piano-container">
-                     </div>
-                 </div>
-                 <div id="note-display-outlines" class="note-display"></div>
-                  <div class="flex justify-start gap-4 mt-2 text-sm text-zinc-400">
-                     <div class="flex items-center"><div class="w-4 h-4 rounded bg-lime-400 mr-2"></div>Nota de la Escala</div>
-                  </div>
-             </div>
-         </div>
-
-        <div id="page-improvisation" class="tab-content page-section">
-            
-            <div class="interactive-section mb-8">
-                <h3 class="text-center mt-2 text-amber-400">Generador de Frases (Licks)</h3>
-                <p class="text-sm text-zinc-400 mb-6 text-center">Combina las fórmulas melódicas y las escalas con notas extras para crear frases aleatorias sobre un acorde V7.</p>
-                
-                <div class="mb-4 max-w-xs mx-auto">
-                    <label for="lick-tonic-select">Tonalidad (Acorde I):</label>
-                    <select id="lick-tonic-select">
-                        <option value="C" selected>C</option><option value="Db">Db / C#</option><option value="D">D</option><option value="Eb">Eb</option>
-                        <option value="E">E</option><option value="F">F</option><option value="Gb">Gb / F#</option><option value="G">G</option>
-                        <option value="Ab">Ab</option><option value="A">A</option><option value="Bb">Bb</option><option value="B">B / Cb</option>
-                    </select>
-                </div>
-                <p class="text-center text-zinc-400 mb-4">Improvisar sobre: <strong id="lick-v7-display" class="text-xl text-amber-400">G7</strong></p>
-
-                <div class="text-center">
-                    <div class="flex justify-center gap-4">
-                        <button id="btn-generate-lick" class="bg-lime-500 hover:bg-lime-400 text-zinc-900 font-bold py-3 px-6 rounded-lg transition-all">
-                            Generar Frase
-                        </button>
-                        <button id="btn-repeat-lick" class="control-button bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-3 px-5 rounded-lg transition-all" disabled>▶ Repetir</button>
-                        <button id="btn-save-lick" class="control-button bg-sky-500 hover:bg-sky-400 text-white font-bold py-3 px-5 rounded-lg transition-all" disabled>+</button>
-                    </div>
-                </div>
-                
-                <p id="lick-formula-display" class="text-sm text-zinc-400 mt-4 text-center min-h-[2.5rem]"></p>
-
-                <div class="piano-section mt-6">
-                    <p class="piano-label">Frase Generada (Rango: C2 - C6)</p>
-                    <div class="piano-scroll-container">
-                        <div id="piano-container-lick" class="piano-container">
-                        </div>
-                    </div>
-                    <div id="note-display-lick" class="note-display"></div>
-                    <div class="flex justify-start gap-4 mt-2 text-sm text-zinc-400">
-                        <div class="flex items-center"><div class="w-4 h-4 rounded bg-amber-500 mr-2"></div>Nota de Escala/Acorde</div>
-                        <div class="flex items-center"><div class="w-4 h-4 rounded bg-rose-500 mr-2"></div>Nota Extra</div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="saved-licks-section" class="interactive-section mb-8" style="display: none;">
-                <h3 class="text-center mt-2 text-amber-400">Frases Guardadas</h3>
-                <div id="saved-licks-container" class="space-y-4 mt-4">
-                </div>
-            </div>
-
-
-            <div class="interactive-section mb-8">
-                <h3 class="text-center mt-2 text-amber-400">Explorador Interactivo de "Notas Extras"</h3>
-                <p class="text-sm text-zinc-400 mb-6 text-center">Practica cómo añadir notas cromáticas a las escalas para que las notas del acorde caigan en tiempo fuerte (Reglas Bebop).</p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div><label for="impro-scale-type">Tipo de Escala:</label><select id="impro-scale-type"><option value="dominant" selected>Dominante 7</option><option value="major6dim">Major 6 Diminished</option><option value="minor6dim">minor 6 Diminished</option></select></div>
-                    <div><label for="impro-scale-root">Tónica:</label><select id="impro-scale-root"><option value="C" selected>C</option><option value="Db">Db / C#</option><option value="D">D</option><option value="Eb">Eb</option><option value="E">E</option><option value="F">F</option><option value="Gb">Gb / F#</option><option value="G">G</option><option value="Ab">Ab</option><option value="A">A</option><option value="Bb">Bb</option><option value="B">B / Cb</option></select></div>
-                    <div><label for="impro-start-degree">Nota de Inicio (Grado):</label><select id="impro-start-degree"><option value="8">8 (Octava)</option><option value="7">7</option><option value="6">6</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1 (Tónica)</option></select></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><button id="btn-apply-rule1" class="control-button bg-amber-500 hover:bg-amber-400 text-black font-bold py-2 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">Aplicar Regla 1 (0 ó 1 Nota Extra)</button><button id="btn-apply-rule2" class="control-button bg-amber-500 hover:bg-amber-400 text-black font-bold py-2 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">Aplicar Regla 2 (2 ó 3 Notas Extras)</button></div>
-                 <div class="piano-section">
-                    <p class="piano-label">Resultado (Rango: C2 - C6)</p><div class="piano-scroll-container"><div id="piano-container-impro" class="piano-container"></div></div>
-                    <div id="note-display-impro" class="note-display"></div> 
-                    <div class="flex justify-start gap-4 mt-2 text-sm text-zinc-400"><div class="flex items-center"><div class="w-4 h-4 rounded bg-amber-500 mr-2"></div>Nota de Escala/Acorde</div><div class="flex items-center"><div class="w-4 h-4 rounded bg-rose-500 mr-2"></div>Nota Extra</div></div>
-                </div>
-            </div>
-
-            <div class="interactive-section mb-8">
-                <h3 class="text-center mt-2 text-amber-400">Pivote Melódico y Armónico (Pivoting)</h3>
-                
-                <h4 class="text-zinc-200">Ejemplo 1: Pivote de Escala</h4>
-                <p class="text-sm text-zinc-400 mb-4">Escucha una frase descendente de C7. La segunda versión "pivota" (salta una octava) en la nota G para cambiar la dirección y el registro.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button id="btn-pivot-1" class="control-button bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-4 rounded-lg transition-all">
-                        1. Frase de Escala (Sin Pivote)
-                    </button>
-                    <button id="btn-pivot-2" class="control-button bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-4 rounded-lg transition-all">
-                        2. Frase de Escala (Con Pivote)
-                    </button>
-                </div>
-
-                <h4 class="text-zinc-200 mt-6">Ejemplo 2: Pivote de Arpegio (Voicing)</h4>
-                <p class="text-sm text-zinc-400 mb-4">Escucha un arpegio. La segunda versión "pivota" la tónica (nota más grave) a la octava superior, creando un *voicing* diferente.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                     <div>
-                        <label for="pivot-root-select">Tónica:</label>
-                        <select id="pivot-root-select">
-                            <option value="C" selected>C</option><option value="Db">Db / C#</option><option value="D">D</option><option value="Eb">Eb</option>
-                            <option value="E">E</option><option value="F">F</option><option value="Gb">Gb / F#</option><option value="G">G</option>
-                            <option value="Ab">Ab</option><option value="A">A</option><option value="Bb">Bb</option><option value="B">B / Cb</option>
-                        </select>
-                     </div>
-                     <div>
-                        <label for="pivot-quality-select">Tipo de Acorde:</label>
-                        <select id="pivot-quality-select">
-                            <option value="maj7" selected>maj7</option>
-                            <option value="m7">m7</option>
-                            <option value="7">7</option>
-                            <option value="m7b5">m7(b5)</option>
-                            <option valueV="dim7">dim7</option>
-                        </select>
-                     </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button id="btn-pivot-arpeggio-normal" class="control-button bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-4 rounded-lg transition-all">
-                        1. Arpegio (Normal)
-                    </button>
-                    <button id="btn-pivot-arpeggio-pivot" class="control-button bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-4 rounded-lg transition-all">
-                        2. Arpegio (Con Pivote)
-                    </button>
-                </div>
-            </div>
-
-            <div class="interactive-section mb-8">
-                <h3 class="text-center mt-2 text-amber-400">Fórmulas para Crear Frases</h3>
-                <p class="text-sm text-zinc-400 mb-4">Estas son las 5 "fórmulas" o reglas de aplicación (mencionadas en `Impro bebop.pdf` p. 15) para conectar arpegios y otras ideas con tus escalas descendentes.</p>
-                <ol class="list-decimal list-inside text-zinc-300 space-y-2">
-                    <li><strong>Ascenso y Descenso:</strong> Empieza en cualquier grado, sube hasta otro grado cualquiera y baja la escala aplicando la <strong>regla de la nota inicial</strong>.</li>
-                    <li><strong>Comienzo con Tresillo:</strong> Comienza con un tresillo de corcheas y baja la escala aplicando la <strong>regla de la segunda nota</strong> del tresillo.</li>
-                    <li><strong>Comienzo con Tríada:</strong> Sube por cualquier tríada diatónica y baja la escala aplicando la <strong>regla de la tónica (nota base)</strong> de esa tríada.</li>
-                    <li><strong>Comienzo con Cuatríada (Acorde):</strong> Sube por un acorde de 4 notas y baja la escala aplicando la <strong>regla de la nota más aguda</strong> del acorde.</li>
-                    <li><strong>Aproximación + Tresillo:</strong> Comienza un semitono por debajo de un acorde, sube el arpegio en tresillo y baja la escala aplicando la <strong>regla de la nota más aguda</strong> del arpegio.</li>
-                </ol>
-            </div>
-
-        </div>
-        
-        <div id="page-summary" class="tab-content page-section">
-            <h2>Resumen de Sustituciones y Equivalencias</h2>
-            <div class="mb-6 max-w-xs mx-auto">
-                <label for="key-select-summary">Selecciona la Tonalidad (I):</label>
-                <select id="key-select-summary">
-                    <option value="C" selected>C</option> <option value="Db">Db / C#</option> <option value="D">D</option> <option value="Eb">Eb</option>
-                    <option value="E">E</option> <option value="F">F</option> <option value="Gb">Gb / F#</option> <option value="G">G</option>
-                    <option value="Ab">Ab</option> <option value="A">A</option> <option value="Bb">Bb</option> <option value="B">B / Cb</option>
-                </select>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div id="summary-col-ii" class="bg-zinc-800 p-4 rounded-lg">
-                    <h3 class="text-xl font-semibold text-center mb-4 border-b border-zinc-700 pb-2">Acorde II</h3>
-                </div>
-                <div id="summary-col-v" class="bg-zinc-800 p-4 rounded-lg">
-                    <h3 class="text-xl font-semibold text-center mb-4 border-b border-zinc-700 pb-2">Acorde V</h3>
-                </div>
-                <div id="summary-col-i" class="bg-zinc-800 p-4 rounded-lg">
-                    <h3 class="text-xl font-semibold text-center mb-4 border-b border-zinc-700 pb-2">Acorde I</h3>
-                </div>
-            </div>
-            
-            <div class="bg-zinc-800 rounded-lg mb-6 p-4">
-                 <h3 class="text-xl font-semibold text-center mb-4 border-b border-zinc-700 pb-2">Equivalencias Generales</h3>
-                 <div id="summary-col-equiv" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 </div>
-            </div>
-
-            <div class="piano-section">
-                <p class="piano-label">Visualizador de Teclado (Rango: C2 - C6)</p>
-                <div class="piano-scroll-container"><div id="piano-container-summary" class="piano-container"></div></div>
-                <div id="note-display-summary" class="note-display"></div>
-                <div class="flex justify-start gap-4 mt-2 text-sm text-zinc-400">
-                    <div class="flex items-center"><div class="w-4 h-4 rounded bg-amber-500 mr-2"></div>Nota del Acorde</div>
-                    <div class="flex items-center"><div class="w-4 h-4 rounded bg-sky-500 mr-2"></div>Nota del Bajo</div>
-                </div>
-            </div>
-        </div>
-
-    </div>
 
     <script>
-        const notePositions = { 'C2': { white: 0 }, 'Db2': { black: 25 }, 'D2': { white: 40 }, 'Eb2': { black: 65 }, 'E2': { white: 80 }, 'F2': { white: 120 }, 'Gb2': { black: 145 }, 'G2': { white: 160 }, 'Ab2': { black: 185 }, 'A2': { white: 200 }, 'Bb2': { black: 225 }, 'B2': { white: 240 }, 'C3': { white: 280 }, 'Db3': { black: 305 }, 'D3': { white: 320 }, 'Eb3': { black: 345 }, 'E3': { white: 360 }, 'F3': { white: 400 }, 'Gb3': { black: 425 }, 'G3': { white: 440 }, 'Ab3': { black: 465 }, 'A3': { white: 480 }, 'Bb3': { black: 505 }, 'B3': { white: 520 }, 'C4': { white: 560 }, 'Db4': { black: 585 }, 'D4': { white: 600 }, 'Eb4': { black: 625 }, 'E4': { white: 640 }, 'F4': { white: 680 }, 'Gb4': { black: 705 }, 'G4': { white: 720 }, 'Ab4': { black: 745 }, 'A4': { white: 760 }, 'Bb4': { black: 785 }, 'B4': { white: 800 }, 'C5': { white: 840 }, 'Db5': { black: 865 }, 'D5': { white: 880 }, 'Eb5': { black: 905 }, 'E5': { white: 920 }, 'F5': { white: 960 }, 'Gb5': { black: 985 }, 'G5': { white: 1000 }, 'Ab5': { black: 1025 }, 'A5': { white: 1040 }, 'Bb5': { black: 1065 }, 'B5': { white: 1080 }, 'C6': { white: 1120 } };
-        const whiteNotesOrder = [ 'C2', 'D2', 'E2', 'F2', 'G2', 'A2', 'B2', 'C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5', 'G5', 'A5', 'B5', 'C6' ];
-        const blackNotesOrder = [ 'Db2', 'Eb2', 'Gb2', 'Ab2', 'Bb2', 'Db3', 'Eb3', 'Gb3', 'Ab3', 'Bb3', 'Db4', 'Eb4', 'Gb4', 'Ab4', 'Bb4', 'Db5', 'Eb5', 'Gb5', 'Ab5', 'Bb5' ];
-        function getNoteName(note) { if (!note) return "?"; return note.slice(0, -1).replace(/[0-9]/, ''); } 
-        function drawPiano(container) { if (!container) { console.error("Contenedor de piano no encontrado:", container?.id); return; } container.innerHTML = ''; whiteNotesOrder.forEach(note => { const key = document.createElement('div'); key.className = `piano-key white-key`; key.dataset.note = note; key.style.left = `${notePositions[note]?.white ?? 0}px`; const lbl = document.createElement('span'); lbl.className = 'note-label'; lbl.textContent = getNoteName(note); key.appendChild(lbl); container.appendChild(key); }); blackNotesOrder.forEach(note => { const key = document.createElement('div'); key.className = `piano-key black-key`; key.dataset.note = note; key.style.left = `${notePositions[note]?.black ?? 0}px`; container.appendChild(key); }); const lastW = notePositions['C6']?.white ?? 1120; container.style.width = `${lastW + 40 + 10}px`; }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            let audioCtx = null; const oscillatorType = 'triangle'; 
-            const noteFrequencies = { 'C2': 65.41, 'Db2': 69.30, 'D2': 73.42, 'Eb2': 77.78, 'E2': 82.41, 'F2': 87.31, 'Gb2': 92.50, 'G2': 98.00, 'Ab2': 103.83, 'A2': 110.00, 'Bb2': 116.54, 'B2': 123.47, 'C3': 130.81, 'Db3': 138.59, 'D3': 146.83, 'Eb3': 155.56, 'E3': 164.81, 'F3': 174.61, 'Gb3': 185.00, 'G3': 196.00, 'Ab3': 207.65, 'A3': 220.00, 'Bb3': 233.08, 'B3': 246.94, 'C4': 261.63, 'Db4': 277.18, 'D4': 293.66, 'Eb4': 311.13, 'E4': 329.63, 'F4': 349.23, 'Gb4': 369.99, 'G4': 392.00, 'Ab4': 415.30, 'A4': 440.00, 'Bb4': 466.16, 'B4': 493.88, 'C5': 523.25, 'Db5': 554.37, 'D5': 587.33, 'Eb5': 622.25, 'E5': 659.25, 'F5': 698.46, 'Gb5': 739.99, 'G5': 783.99, 'Ab5': 830.61, 'A5': 880.00, 'Bb5': 932.33, 'B5': 987.77, 'C6': 1046.50 };
-            const ALL_NOTES = Object.keys(noteFrequencies);
-            const KEY_ROOT_NOTES = { 'C': 'C2', 'Db': 'Db2', 'D': 'D2', 'Eb': 'Eb2', 'E': 'E2', 'F': 'F2', 'Gb': 'Gb2', 'G': 'G2', 'Ab': 'Ab2', 'A': 'A2', 'Bb': 'Bb2', 'B': 'B2' };
-            const SCALE_KEY_ROOT_NOTES = { 'C': 'C3', 'Db': 'Db3', 'D': 'D3', 'Eb': 'Eb3', 'E': 'E3', 'F': 'F3', 'Gb': 'Gb3', 'G': 'G3', 'Ab': 'Ab3', 'A': 'A3', 'Bb': 'Bb3', 'B': 'B3' };
-            
-            const tabButtons = document.querySelectorAll('.tab-button'); const tabContents = document.querySelectorAll('.tab-content');
-            const pianoContainer251 = document.getElementById('piano-container-251'); const noteDisplay251 = document.getElementById('note-display-251'); const conceptTitleEl251 = document.getElementById('concept-title-251'); const conceptSubtitleEl251 = document.getElementById('concept-subtitle-251'); const conceptDescriptionEl251 = document.getElementById('concept-description-251'); const btnStandard251 = document.getElementById('btn-standard-251'); const btnHarris251 = document.getElementById('btn-harris-251'); const btnPrev251 = document.getElementById('btn-prev-251'); const btnNext251 = document.getElementById('btn-next-251'); const stepIndicator251 = document.getElementById('step-indicator-251'); const keySelect251 = document.getElementById('key-select-251'); const inversionControls251 = document.getElementById('inversion-controls-251'); const btnInv0 = document.getElementById('btn-inv-0'); const btnInv1 = document.getElementById('btn-inv-1'); const btnInv2 = document.getElementById('btn-inv-2'); const btnInv3 = document.getElementById('btn-inv-3');
-            const pianoContainerDiminished = document.getElementById('piano-container-diminished'); const noteDisplayDiminished = document.getElementById('note-display-diminished'); const keySelectDiminished = document.getElementById('key-select-diminished'); const domButtonsContainer = document.getElementById('dominant-buttons-container'); const m7b5ButtonsContainer = document.getElementById('m7b5-buttons-container'); const btnDimUp = document.getElementById('btn-dim-up'); const btnDimBase = document.getElementById('btn-dim-base'); const btnDimDown = document.getElementById('btn-dim-down'); const keySelectScales = document.getElementById('key-select-scales'); 
-            const btnMaj6Chord = document.getElementById('btn-maj6-chord'); const btnMaj6DimChord = document.getElementById('btn-maj6-dim-chord'); const btnMaj6DimScale = document.getElementById('btn-maj6-dim-scale');
-            const btnMin6Chord = document.getElementById('btn-min6-chord'); const btnMin6DimChord = document.getElementById('btn-min6-dim-chord'); const btnMin6DimScale = document.getElementById('btn-min6-dim-scale');
-            const pianoContainerImpro = document.getElementById('piano-container-impro'); const noteDisplayImpro = document.getElementById('note-display-impro'); const improScaleTypeSelect = document.getElementById('impro-scale-type'); const improScaleRootSelect = document.getElementById('impro-scale-root'); const improStartDegreeSelect = document.getElementById('impro-start-degree'); const btnApplyRule1 = document.getElementById('btn-apply-rule1'); const btnApplyRule2 = document.getElementById('btn-apply-rule2');
-            const pianoContainerOutlines = document.getElementById('piano-container-outlines'); const noteDisplayOutlines = document.getElementById('note-display-outlines'); const outlineSelect = document.getElementById('outline-select'); const outlineKeySelect = document.getElementById('outline-key-select'); const outlineGridContainer = document.getElementById('outline-grid-container'); const outlineNameDisplay = document.getElementById('outline-name-display'); const btnPlayOutline = document.getElementById('btn-play-outline');
-            const btnPivot1 = document.getElementById('btn-pivot-1');
-            const btnPivot2 = document.getElementById('btn-pivot-2');
-            const pivotRootSelect = document.getElementById('pivot-root-select');
-            const pivotQualitySelect = document.getElementById('pivot-quality-select');
-            const btnPivotArpeggioNormal = document.getElementById('btn-pivot-arpeggio-normal');
-            const btnPivotArpeggioPivot = document.getElementById('btn-pivot-arpeggio-pivot');
-            const lickTonicSelect = document.getElementById('lick-tonic-select');
-            const lickV7Display = document.getElementById('lick-v7-display');
-            const btnGenerateLick = document.getElementById('btn-generate-lick');
-            const lickFormulaDisplay = document.getElementById('lick-formula-display');
-            const pianoContainerLick = document.getElementById('piano-container-lick');
-            const noteDisplayLick = document.getElementById('note-display-lick');
-            const btnRepeatLick = document.getElementById('btn-repeat-lick');
-            const btnSaveLick = document.getElementById('btn-save-lick');
-            const savedLicksSection = document.getElementById('saved-licks-section');
-            const savedLicksContainer = document.getElementById('saved-licks-container');
-            
-            const pianoContainerSummary = document.getElementById('piano-container-summary');
-            const noteDisplaySummary = document.getElementById('note-display-summary');
-            const keySelectSummary = document.getElementById('key-select-summary');
-            const summaryColII = document.getElementById('summary-col-ii');
-            const summaryColV = document.getElementById('summary-col-v');
-            const summaryColI = document.getElementById('summary-col-i');
-            const summaryColEquiv = document.getElementById('summary-col-equiv');
-
-            const LICK_STORAGE_KEY = 'barryHarrisSavedLicks';
-            let lastGeneratedLick = { notes: [], formula: "", name: "", v7: "" };
-
-            function transpose(note, semitones) { if (!note) { return 'C4'; } const index = ALL_NOTES.indexOf(note); if (index === -1) { return note; } const newIndex = index + semitones; if (newIndex >= 0 && newIndex < ALL_NOTES.length) { return ALL_NOTES[newIndex]; } else { const normIdx = index % 12; let targetIdx = (normIdx + semitones) % 12; if (targetIdx < 0) { targetIdx += 12; } let targetOct = Math.floor(index / 12) + Math.floor((index % 12 + semitones) / 12); targetOct = Math.max(2, Math.min(5, targetOct)); let baseName = ''; for(let i=0; i<ALL_NOTES.length; i++){ if(i % 12 === targetIdx){ baseName = getNoteName(ALL_NOTES[i]); break; } } if(!baseName){ return note; } const newNote = `${baseName}${targetOct}`; if(noteFrequencies[newNote]) return newNote; const fallbackNote = `${baseName}4`; if(noteFrequencies[fallbackNote]) return fallbackNote; return note; } }
-            
-            function getChordNameFromInterval(rootNote, interval, type) {
-                  const targetRoot = transpose(rootNote, interval);
-                  let suffix = '';
-                  if (type === 'major') suffix = 'Maj';
-                  else if (type === 'dominant') suffix = '7';
-                  else if (type === 'minor') suffix = 'm7';
-                  return getNoteName(targetRoot) + suffix;
-             }
-
-            function getChordInversions(notes) { if (!notes || notes.length !== 4) { return [[], [], [], []]; } const sortedRootNotes = [...notes].sort((a, b) => ALL_NOTES.indexOf(a) - ALL_NOTES.indexOf(b)); const inversions = []; const t = (n) => transpose(n, 12); let rootNote, thirdNote, fifthNote, sixthNote; let foundRoot = false; for(const note of sortedRootNotes) { const noteType = sortedRootNotes.some(n => (ALL_NOTES.indexOf(n) - ALL_NOTES.indexOf(note) + 12) % 12 === 3) ? 'm6' : 'M6'; const thirdInterval = noteType === 'm6' ? 3 : 4; const fifthInterval = 7; const sixthInterval = 9; const hasThird = sortedRootNotes.some(n => (ALL_NOTES.indexOf(n) - ALL_NOTES.indexOf(note) + 12) % 12 === thirdInterval); const hasFifth = sortedRootNotes.some(n => (ALL_NOTES.indexOf(n) - ALL_NOTES.indexOf(note) + 12) % 12 === fifthInterval); const hasSixth = sortedRootNotes.some(n => (ALL_NOTES.indexOf(n) - ALL_NOTES.indexOf(note) + 12) % 12 === sixthInterval); if (hasThird && hasFifth && hasSixth) { rootNote = note; thirdNote = sortedRootNotes.find(n => (ALL_NOTES.indexOf(n) - ALL_NOTES.indexOf(note) + 12) % 12 === thirdInterval); fifthNote = sortedRootNotes.find(n => (ALL_NOTES.indexOf(n) - ALL_NOTES.indexOf(note) + 12) % 12 === fifthInterval); sixthNote = sortedRootNotes.find(n => (ALL_NOTES.indexOf(n) - ALL_NOTES.indexOf(note) + 12) % 12 === sixthInterval); foundRoot = true; break; } } if (!foundRoot) { rootNote = sortedRootNotes[0]; thirdNote = sortedRootNotes[1]; fifthNote = sortedRootNotes[2]; sixthNote = sortedRootNotes[3]; } if (!rootNote || !thirdNote || !fifthNote || !sixthNote) { return [[], [], [], []]; } if (ALL_NOTES.indexOf(thirdNote) < ALL_NOTES.indexOf(rootNote)) thirdNote = t(thirdNote); if (ALL_NOTES.indexOf(fifthNote) < ALL_NOTES.indexOf(thirdNote)) fifthNote = t(fifthNote); if (ALL_NOTES.indexOf(sixthNote) < ALL_NOTES.indexOf(fifthNote)) sixthNote = t(sixthNote); inversions.push([rootNote, thirdNote, fifthNote, sixthNote].filter(Boolean)); inversions.push([thirdNote, fifthNote, sixthNote, t(rootNote)].filter(Boolean)); inversions.push([fifthNote, sixthNote, t(rootNote), t(thirdNote)].filter(Boolean)); inversions.push([sixthNote, t(rootNote), t(thirdNote), t(fifthNote)].filter(Boolean)); return inversions.map(inv => inv.length === 4 ? inv : []); }
-
-            function getFrequency(note) { return noteFrequencies[note] || 0; }
-            function playChord(notes, duration = 1.5, startTime = 0) { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error("Web Audio API no soportada", e); return; } } if (audioCtx.state === 'suspended') { audioCtx.resume(); } const scheduledTime = audioCtx.currentTime + startTime; const gain = Math.min(0.4, 0.7 / (notes.length || 1)) ; notes.forEach(note => { if (!note) { return; } const freq = getFrequency(note); if (freq === 0) { return; } const osc = audioCtx.createOscillator(); const gainN = audioCtx.createGain(); osc.type = oscillatorType; osc.frequency.setValueAtTime(freq, scheduledTime); gainN.gain.setValueAtTime(gain, scheduledTime); gainN.gain.exponentialRampToValueAtTime(0.0001, scheduledTime + duration); osc.connect(gainN); gainN.connect(audioCtx.destination); osc.start(scheduledTime); osc.stop(scheduledTime + duration); }); }
-            let scalePlaybackTimeout = null; 
-            function playAnimatedScale(notesWithInfo, container, highlightType = 'highlighted', baseNoteDuration = 0.25) { 
-                 if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return Promise.reject("Web Audio API not supported"); } } if (audioCtx.state === 'suspended') { audioCtx.resume(); } stopAnimatedScale(); highlightKeys(container, []); 
-                 let cumulativeTime = 0; let timeouts = []; let playedNotesSequence = []; 
-                 return new Promise((resolve) => { 
-                     notesWithInfo.forEach(({note, isExtra, direction, durationFactor}, index) => { 
-                         const startTime = cumulativeTime;
-                         const noteDuration = baseNoteDuration * (durationFactor || 1);
-                         const actualDuration = direction === 'pause' ? noteDuration * 1.5 : noteDuration; 
-                         if (direction !== 'pause' && note) { 
-                             playedNotesSequence.push({ note, isExtra }); 
-                             timeouts.push(setTimeout(() => { 
-                                 highlightAnimatedKey(container, note, isExtra, highlightType, playedNotesSequence); 
-                             }, startTime * 1000)); 
-                             playChord([note], actualDuration * 0.9, startTime); 
-                         } else { 
-                             timeouts.push(setTimeout(() => { 
-                                 highlightKeys(container, []); updateNoteDisplay(container, []); 
-                             }, startTime * 1000)); 
-                         } 
-                         cumulativeTime += actualDuration; 
-                     }); 
-                     timeouts.push(setTimeout(() => { 
-                         scalePlaybackTimeout = null; resolve(); 
-                     }, cumulativeTime * 1000)); 
-                     scalePlaybackTimeout = timeouts; 
-                 }); 
-             }
-            function stopAnimatedScale() { if (Array.isArray(scalePlaybackTimeout)) { scalePlaybackTimeout.forEach(clearTimeout); } else if (scalePlaybackTimeout) { clearTimeout(scalePlaybackTimeout); } scalePlaybackTimeout = null; }
-
-            const scaleFormulas = { dominant: [0, 2, 4, 5, 7, 9, 10], major: [0, 2, 4, 5, 7, 9, 11], major6dim: [0, 2, 4, 5, 7, 8, 9, 11], minor6dim: [0, 2, 3, 5, 7, 8, 9, 11] };
-            const chordTonesMap = { dominant: [1, 3, 5, 7], major6dim: [1, 3, 5, 6], minor6dim: [1, 3, 5, 6] };
-             
-             function getBebopScale(scaleType, rootNote, startDegreeInput) {
-                 const formula = scaleFormulas[scaleType];
-                 if (!formula) return { rule1Scale: [], rule2Scale: [], rule1Label: 'Err', rule2Label: 'Err', canApplyRule1: false, canApplyRule2: false };
-                 const scaleLength = formula.length; 
-                 const rootNoteIndex = ALL_NOTES.indexOf(rootNote);
-                 if (rootNoteIndex === -1) return { rule1Scale: [], rule2Scale: [], rule1Label: 'Err', rule2Label: 'Err', canApplyRule1: false, canApplyRule2: false };
-                 
-                 let actualStartDegree = parseInt(startDegreeInput);
-                 let startNote;
-                 let currentDegreeIndex; 
-                 
-                 let baseOctaveNote = transpose(rootNote, 12); 
-                 
-                 if (actualStartDegree === 8 || actualStartDegree === 1) {
-                     startNote = transpose(baseOctaveNote, 12); 
-                     currentDegreeIndex = 0; 
-                 } else {
-                     currentDegreeIndex = actualStartDegree - 1; 
-                     let startInterval = formula[currentDegreeIndex]; 
-                     startNote = transpose(baseOctaveNote, startInterval); 
-                     if (ALL_NOTES.indexOf(startNote) < ALL_NOTES.indexOf(baseOctaveNote)) {
-                          startNote = transpose(startNote, 12); 
-                     }
-                 }
-                 
-                 while (ALL_NOTES.indexOf(startNote) > ALL_NOTES.indexOf('C6')) {
-                      startNote = transpose(startNote, -12);
-                 }
-
-                 const baseScale = [startNote];
-                 let lastNote = startNote;
-                 
-                 for (let i = 0; i < scaleLength; i++) { 
-                      const nextDegreeIndex = (currentDegreeIndex - 1 + scaleLength) % scaleLength;
-                     
-                     let semitonesDown = (formula[currentDegreeIndex] - formula[nextDegreeIndex] + 12) % 12;
-                     if (semitonesDown === 0) semitonesDown = 12; 
-                     
-                     let nextNote = transpose(lastNote, -semitonesDown);
-                     
-                     if (ALL_NOTES.indexOf(nextNote) < ALL_NOTES.indexOf('C2')) break; 
-                     baseScale.push(nextNote);
-                     lastNote = nextNote;
-                     currentDegreeIndex = nextDegreeIndex;
-                 }
-
-
-                 if (baseScale.length < scaleLength + 1) { console.error("Error al generar baseScale", baseScale); return { rule1Scale: [], rule2Scale: [], rule1Label: 'Err', rule2Label: 'Err', canApplyRule1: false, canApplyRule2: false }; }
-                 const isEvenStart = actualStartDegree % 2 === 0;
-                 let rule1ExtraNotes = 0; let rule2ExtraNotes = 0; let rule1Insertions = []; let rule2Insertions = [];
-                 if (scaleType === 'dominant') { const tonicIdx = baseScale.findIndex((n, idx) => idx > 0 && getNoteName(n) === getNoteName(rootNote)); const deg2Idx = baseScale.findIndex(n => (ALL_NOTES.indexOf(n)-rootNoteIndex+12*5)%12 === formula[1]); const deg3Idx = baseScale.findIndex(n => (ALL_NOTES.indexOf(n)-rootNoteIndex+12*5)%12 === formula[2]); if (actualStartDegree === 1 || actualStartDegree === 8) { rule1ExtraNotes = 1; if(baseScale[1]) rule1Insertions.push({ index: 1, extraNote: transpose(baseScale[0], -1) }); rule2ExtraNotes = 1; rule2Insertions = [...rule1Insertions]; } else if (!isEvenStart) { rule1ExtraNotes = 1; if (tonicIdx !== -1 && baseScale[tonicIdx+1]) rule1Insertions.push({ index: tonicIdx + 1, extraNote: transpose(baseScale[tonicIdx], -1) }); rule2ExtraNotes = 3; if (deg3Idx !== -1 && baseScale[deg3Idx+1]) rule2Insertions.push({ index: deg3Idx + 1, extraNote: transpose(baseScale[deg3Idx], -1) }); if (deg2Idx !== -1 && baseScale[deg2Idx+1]) rule2Insertions.push({ index: deg2Idx + 1, extraNote: transpose(baseScale[deg2Idx], -1) }); if (tonicIdx !== -1 && baseScale[tonicIdx+1]) rule2Insertions.push({ index: tonicIdx + 1, extraNote: transpose(baseScale[tonicIdx], -1) }); } else { rule1ExtraNotes = 0; rule2ExtraNotes = 2; if (deg2Idx !== -1 && baseScale[deg2Idx+1]) rule2Insertions.push({ index: deg2Idx + 1, extraNote: transpose(baseScale[deg2Idx], -1) }); if (tonicIdx !== -1 && baseScale[tonicIdx+1]) rule2Insertions.push({ index: tonicIdx + 1, extraNote: transpose(baseScale[tonicIdx], -1) }); } } else { const degree6Interval = scaleType === 'major6dim' ? 9 : 9; const degree6Index = baseScale.findIndex((n, idx) => idx > 0 && (ALL_NOTES.indexOf(n)-rootNoteIndex+12*5)%12 === degree6Interval); rule1ExtraNotes = 1; if (degree6Index !== -1 && baseScale[degree6Index+1]) { rule1Insertions.push({ index: degree6Index + 1, extraNote: transpose(baseScale[degree6Index], -1)}); } rule2ExtraNotes = 1; rule2Insertions = [...rule1Insertions]; }
-                 rule1Insertions.sort((a,b) => a.index - b.index); rule2Insertions.sort((a,b) => a.index - b.index);
-                 const applyRules = (insertions) => { const resultScale = []; let insertionIdx = 0; for (let i = 0; i < baseScale.length; i++) { while (insertionIdx < insertions.length && insertions[insertionIdx].index === i) { const extraNote = insertions[insertionIdx].extraNote; const prevNote = i > 0 ? baseScale[i-1] : null; let shouldInsert = true; if (prevNote && getNoteName(extraNote) === getNoteName(prevNote)) { shouldInsert = false; } if (shouldInsert) { resultScale.push({ note: extraNote, isExtra: true, durationFactor: 1 }); } insertionIdx++; } resultScale.push({ note: baseScale[i], isExtra: false, durationFactor: 1 }); } return resultScale; };
-                 return { rule1Scale: applyRules([...rule1Insertions]), rule2Scale: applyRules([...rule2Insertions]), rule1Label: `${rule1ExtraNotes} Nota${rule1ExtraNotes !== 1 ? 's' : ''} Extra${rule1ExtraNotes > 0 ? '' : 's'}`, rule2Label: `${rule2ExtraNotes} Nota${rule2ExtraNotes !== 1 ? 's' : ''} Extra${rule2ExtraNotes > 0 ? '' : 's'}`, canApplyRule1: true, canApplyRule2: (scaleType === 'dominant' && actualStartDegree !== 1 && actualStartDegree !== 8) || (scaleType !== 'dominant' && rule2ExtraNotes > 0) };
-             }
-
-            function updateImproControls() { const scaleType = improScaleTypeSelect.value; const rootName = improScaleRootSelect.value; const startDeg = parseInt(improStartDegreeSelect.value); const rootNote = SCALE_KEY_ROOT_NOTES[rootName]; const { rule1Label, rule2Label, canApplyRule1, canApplyRule2 } = getBebopScale(scaleType, rootNote, startDeg); btnApplyRule1.textContent = `Oír Regla 1 (${rule1Label})`; btnApplyRule2.textContent = `Oír Regla 2 (${rule2Label})`; btnApplyRule1.disabled = !canApplyRule1; btnApplyRule2.disabled = !canApplyRule2; highlightKeys(pianoContainerImpro, []); noteDisplayImpro.textContent = ''; }
-            btnApplyRule1.onclick = () => { const type = improScaleTypeSelect.value; const rootName = improScaleRootSelect.value; const startDeg = parseInt(improStartDegreeSelect.value); const rootNote = SCALE_KEY_ROOT_NOTES[rootName]; const { rule1Scale } = getBebopScale(type, rootNote, startDeg); playAnimatedScale(rule1Scale, pianoContainerImpro, 'highlighted'); };
-            btnApplyRule2.onclick = () => { const type = improScaleTypeSelect.value; const rootName = improScaleRootSelect.value; const startDeg = parseInt(improStartDegreeSelect.value); const rootNote = SCALE_KEY_ROOT_NOTES[rootName]; const { rule2Scale } = getBebopScale(type, rootNote, startDeg); playAnimatedScale(rule2Scale, pianoContainerImpro, 'highlighted'); };
-            
-             function updateNoteDisplay(container, notesSequence) {
-                 let noteDisplay;
-                 if (container === pianoContainerImpro) noteDisplay = noteDisplayImpro;
-                 else if (container === pianoContainerOutlines) noteDisplay = noteDisplayOutlines;
-                 else if (container === pianoContainer251) noteDisplay = noteDisplay251;
-                 else if (container === pianoContainerDiminished) noteDisplay = noteDisplayDiminished;
-                 else if (container === pianoContainerLick) noteDisplay = noteDisplayLick;
-                 
-                 if (noteDisplay) {
-                     let displayString = '';
-                     if (notesSequence && Array.isArray(notesSequence) && notesSequence.length > 0) {
-                          if (notesSequence[0] && typeof notesSequence[0] === 'object' && notesSequence[0].hasOwnProperty('note')) {
-                              displayString = `${(container === pianoContainerImpro || container === pianoContainerLick) ? 'Sec:' : 'Notas:'} ${notesSequence.map(({ note, isExtra }) => 
-                                 `<span class="inline-block px-1 ${isExtra ? 'text-amber-400 font-semibold' : 'text-zinc-300'}">${getNoteName(note)}</span>` 
-                             ).join('')}`;
-                          } 
-                          else if (typeof notesSequence[0] === 'string') {
-                              let is251Inversion = false;
-                              if (container === pianoContainer251 && notesSequence.length === 4) {
-                                  const concept = concepts251[currentConceptIndex251];
-                                  if (concept && concept.harrisChord && concept.harrisChord.inversions) {
-                                       is251Inversion = concept.harrisChord.inversions.some(inv => 
-                                           inv.length === notesSequence.length && inv.every((note, i) => note === notesSequence[i])
-                                       );
-                                  }
-                              }
-                              
-                              if (is251Inversion) {
-                                   displayString = `Notas: ${notesSequence.map(getNoteName).filter(Boolean).join(', ')}`;
-                              } else { 
-                                   const uniqueSortedNotes = [...new Set(notesSequence)].sort((a,b) => ALL_NOTES.indexOf(a) - ALL_NOTES.indexOf(b));
-                                   displayString = `Notas: ${uniqueSortedNotes.map(getNoteName).filter(Boolean).join(', ')}`;
-                              }
-                          }
-                     }
-                     noteDisplay.innerHTML = displayString;
-                 }
-             }
-
-             function highlightAnimatedKey(container, note, isExtra = false, baseHighlightClass = 'highlighted', notesSequence = []) { if (!container || !note) return; container.querySelectorAll('.piano-key').forEach(key => { key.classList.remove('highlighted', 'highlighted-bass', 'highlighted-extra', 'highlighted-outline'); }); const keyEl = container.querySelector(`.piano-key[data-note="${note}"]`); if (keyEl) { const hlClass = isExtra ? 'highlighted-extra' : (baseHighlightClass === 'highlighted-outline' ? 'highlighted-outline' : 'highlighted'); keyEl.classList.add(hlClass); } updateNoteDisplay(container, notesSequence); }
-            improScaleTypeSelect.onchange = updateImproControls; improScaleRootSelect.onchange = updateImproControls; improStartDegreeSelect.onchange = updateImproControls;
-
-            const pivotPhrase1 = [ { note: 'C4', isExtra: false, durationFactor: 1 }, { note: 'B3', isExtra: false, durationFactor: 1 }, { note: 'Bb3', isExtra: false, durationFactor: 1 }, { note: 'A3', isExtra: false, durationFactor: 1 }, { note: 'G3', isExtra: false, durationFactor: 1 }, { note: 'F3', isExtra: false, durationFactor: 1 }, { note: 'E3', isExtra: false, durationFactor: 1 }, { note: 'D3', isExtra: false, durationFactor: 1 } ];
-            const pivotPhrase2 = [ { note: 'C4', isExtra: false, durationFactor: 1 }, { note: 'B3', isExtra: false, durationFactor: 1 }, { note: 'Bb3', isExtra: false, durationFactor: 1 }, { note: 'A3', isExtra: false, durationFactor: 1 }, { note: 'G4', isExtra: true, durationFactor: 1 }, { note: 'F4', isExtra: false, durationFactor: 1 }, { note: 'E4', isExtra: false, durationFactor: 1 }, { note: 'D4', isExtra: false, durationFactor: 1 } ];
-            btnPivot1.onclick = () => { playAnimatedScale(pivotPhrase1, pianoContainerImpro, 'highlighted'); };
-            btnPivot2.onclick = () => { playAnimatedScale(pivotPhrase2, pianoContainerImpro, 'highlighted'); };
-            
-            function getArpeggioNotes(root, quality) {
-                let intervals;
-                switch(quality) {
-                    case 'maj7': intervals = [0, 4, 7, 11]; break;
-                    case 'm7': intervals = [0, 3, 7, 10]; break;
-                    case '7': intervals = [0, 4, 7, 10]; break;
-                    case 'm7b5': intervals = [0, 3, 6, 10]; break;
-                    case 'dim7': intervals = [0, 3, 6, 9]; break;
-                    default: intervals = [0, 4, 7, 11];
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { 
+                        felt: '#15803d', 
+                        feltDark: '#14532d',
+                        wood: '#3f2e18',
+                        woodLight: '#5c4028'
+                    },
+                    animation: { 'fade-in': 'fadeIn 0.5s ease-out' },
+                    keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } },
+                    boxShadow: {
+                        'wood': 'inset 0 0 20px rgba(0,0,0,0.5)',
+                        'felt': 'inset 0 0 50px rgba(0,0,0,0.3)'
+                    }
                 }
-                return intervals.map(i => transpose(root, i));
             }
+        }
+    </script>
 
-            function playPivotArpeggios(isPivot = false) {
-                const rootName = pivotRootSelect.value;
-                const quality = pivotQualitySelect.value;
-                const baseRootNote = transpose(SCALE_KEY_ROOT_NOTES[rootName], 12); // C4
-                
-                const notes = getArpeggioNotes(baseRootNote, quality); // [C4, E4, G4, B4]
-                
-                let notesToPlay = [];
-                let scaleInfo = [];
+    <style>
+        body { overscroll-behavior: none; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+        .touch-none { touch-action: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .cursor-move { cursor: move; }
+        /* Glassmorphism */
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        .dark .glass { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); }
+        /* Texturas generadas con CSS puro para evitar cargas externas */
+        .wood-texture { background-color: #3f2e18; background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 2px, transparent 2px, transparent 4px); }
+        .felt-texture { background-image: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%); }
+        .smooth-move { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <!-- Contenedor Principal -->
+    <div id="root"></div>
 
-                if (!isPivot) {
-                    notesToPlay = notes; // [C4, E4, G4, B4]
-                    scaleInfo = notesToPlay.map(n => ({note: n, isExtra: false, durationFactor: 1}));
+    <!-- Script de Error Global por si React falla antes de cargar -->
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            document.body.innerHTML = '<div style="color:red; padding:20px; font-family:sans-serif;"><h2>Error Crítico</h2><p>' + message + '</p><p>Line: ' + lineno + '</p></div>';
+        };
+    </script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- ICONOS SVG ---
+        const Icons = {
+            Table: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="12" x="3" y="10" rx="2"/><circle cx="12" cy="16" r="2"/></svg>,
+            Home: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+            Stance: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
+            Grip: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>,
+            Eye: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>,
+            Stroke: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
+            Physics: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M2 12h2"/><path d="M20 12h2"/></svg>,
+            Sun: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
+            Moon: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
+            Unlock: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>,
+            Move: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="19 9 22 12 19 15"/><polyline points="9 19 12 22 15 19"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/></svg>,
+            Play: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3" /></svg>,
+            Flip: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>,
+            Folder: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+        };
+
+        // --- DATOS DE TIROS (Scenarios) ---
+        const scenarios = [
+            // Tiro recto ajustado para ser físicamente posible (y=50 está dentro del margen de 12)
+            { name: "Recto a Esquina Sup", cb: {x:450, y:150}, ob:{x:550, y:50}, aim:{x:600, y:0}, desc: "Tiro directo a la tronera superior derecha." },
+            { name: "Recto al Centro", cb: {x:300, y:200}, ob:{x:300, y:50}, aim:{x:300, y:0}, desc: "Tiro recto simple a la tronera central." },
+            { name: "Corte 30° (Media Bola)", cb: {x:250, y:186}, ob:{x:400, y:100}, aim:{x:600, y:0}, desc: "Corte clásico." },
+            { name: "Corte Fino 60°", cb: {x:200, y:100}, ob:{x:500, y:100}, aim:{x:600, y:0}, desc: "Corte fino." },
+            { name: "Tiro Largo Diagonal", cb: {x:50, y:280}, ob:{x:550, y:20}, aim:{x:600, y:0}, desc: "Mesa completa." },
+            { name: "Bola Pegada a Banda", cb: {x:300, y:200}, ob:{x:450, y:288}, aim:{x:600, y:288}, desc: "Pegada a banda." }
+        ];
+
+        // --- CONTENIDO DEL CURSO ---
+        const getCourseData = (loadDrill) => [
+            {
+                id: 'stance', title: '1. Postura', icon: <Icons.Stance />,
+                content: {
+                    summary: "La base inamovible.",
+                    details: [
+                        { title: "El Porqué", text: "El cuerpo es un péndulo inestable. Necesitas anclarlo al suelo con tres puntos." },
+                        { title: "Checklist", text: "1. Pie trasero en línea. 2. Pierna trasera recta. 3. Barbilla baja. 4. Puente firme." }
+                    ],
+                    drills: [
+                        { type: 'off', title: 'El Espejo', desc: "Mírate de frente. Tu cabeza, taco y brazo deben formar una línea vertical perfecta." },
+                        { type: 'off', title: 'Equilibrio', desc: "En tu postura, levanta la pierna delantera." },
+                        { type: 'on', title: 'Estatua', desc: "Tira y quédate congelado. Cuenta 3 segundos antes de levantarte." },
+                        { type: 'on', title: 'Puente de Roca', desc: "Pon el puente. Empújalo con la otra mano. No debe moverse." }
+                    ]
+                }
+            },
+            {
+                id: 'grip', title: '2. Agarre', icon: <Icons.Grip />,
+                content: {
+                    summary: "Sostén el taco como un pájaro herido.",
+                    details: [
+                        { title: "Mecánica", text: "Apretar el taco desvía la punta. La mano debe estar flexible." },
+                        { title: "Errores", text: "Apretar al impactar (Grip Clench) y agarrar con toda la palma." }
+                    ],
+                    drills: [
+                        { type: 'off', title: 'La Botella', desc: "Mete el taco en una botella vacía sin tocar los bordes." },
+                        { type: 'off', title: 'Pasta Dental', desc: "Imagina que el mango es un tubo abierto." },
+                        { type: 'on', title: 'Tiro Suave', desc: "Tira largo y muy suave. Si sientes vibración, estás apretando." },
+                        { type: 'on', title: 'Una Mano', desc: "Emboca bolas fáciles con una sola mano." }
+                    ]
+                }
+            },
+            {
+                id: 'alignment', title: '3. Alineación', icon: <Icons.Eye />,
+                content: {
+                    summary: "Apunta con los ojos.",
+                    details: [
+                        { title: "Vision Center", text: "Es el punto en tu cara donde ves la línea recta real." },
+                        { title: "Entrada", text: "Párate detrás, visualiza la línea y camina hacia ella." }
+                    ],
+                    drills: [
+                        { type: 'off', title: 'Test Ojo', desc: "Descubre tu ojo dominante con un círculo en tus dedos." },
+                        { type: 'off', title: 'Línea Piso', desc: "Camina hacia una línea en el suelo. ¿Tu nariz cae sobre ella?" },
+                        { type: 'on', title: 'Tiro Ciego', desc: "Alineate, cierra ojos, tira. Si fallas, tu cuerpo apuntaba mal." },
+                        { type: 'on', title: 'Stop Shot', desc: "Tiro fuerte y recto. La blanca no debe girar ni desviarse." }
+                    ]
+                }
+            },
+            {
+                id: 'stroke', title: '4. Golpe', icon: <Icons.Stroke />,
+                content: {
+                    summary: "Un péndulo impulsado por gravedad.",
+                    details: [
+                        { title: "El Codo", text: "Es el único punto de pivote. Imagina que está clavado en el aire." },
+                        { title: "Aceleración", text: "No golpees la bola; atraviésala." }
+                    ],
+                    drills: [
+                        { type: 'off', title: 'Pared', desc: "Swings junto a pared. Si el codo toca, tienes 'Chicken Wing'." },
+                        { type: 'off', title: 'Botella Agua', desc: "Swing con botella medio llena." },
+                        { type: 'on', title: 'MOFUDAT', desc: "Tira a banda y regresa a la punta sin moverte." },
+                        { type: 'on', title: 'Largo Recorrido', desc: "Intenta tocar una 'bola fantasma' 10cm delante de la blanca." }
+                    ]
+                }
+            },
+            {
+                id: 'physics', title: '5. Física', icon: <Icons.Physics />, isSimulator: true,
+                content: {
+                    summary: "Geometría sagrada.",
+                    details: [
+                        { title: "Tangente 90°", text: "Sin efecto, la blanca siempre sale a 90°." },
+                        { title: "Bola Fantasma", text: "Visualiza el círculo gris donde debe impactar la blanca." }
+                    ],
+                    drills: [
+                        { type: 'on', title: 'Reloj', desc: "Blanca al centro, bolas alrededor." },
+                        { type: 'on', title: 'Wagon Wheel', desc: "Lleva la blanca a cada tronera tras el impacto." }
+                    ]
+                }
+            }
+        ];
+
+        // --- COMPONENTE SIMULADOR ---
+        const SmartSimulator = ({ onLoadDrill }) => {
+            const TABLE_W = 600;
+            const TABLE_H = 300;
+            const BALL_R = 12;
+            const BORDER = 25; 
+            const PLAY_AREA_MARGIN = BALL_R; 
+
+            const [cb, setCb] = useState({ x: 150, y: 150 });
+            const [ob, setOb] = useState({ x: 400, y: 150 });
+            const [aim, setAim] = useState({ x: 600, y: 150 });
+            const [fixedAngle, setFixedAngle] = useState(null);
+            const [cutSide, setCutSide] = useState(1);
+            
+            const [sightPos, setSightPos] = useState({ x: 20, y: 20 });
+            const [showScenarios, setShowScenarios] = useState(false);
+            
+            const [spin, setSpin] = useState('center');
+            const [speed, setSpeed] = useState(60);
+            const [displayAngle, setDisplayAngle] = useState(0);
+            const [isValid, setIsValid] = useState(true);
+
+            const svgRef = useRef(null);
+            const dragging = useRef(null);
+            const containerRef = useRef(null);
+
+            const presets = [0, 15, 30, 45, 60];
+
+            useEffect(() => {
+                if(onLoadDrill) onLoadDrill.current = (s) => { 
+                    if(s){ setCb(s.cb); setOb(s.ob); setAim(s.aim); setFixedAngle(null); } 
+                };
+            }, [onLoadDrill]);
+
+            useEffect(() => {
+                if(containerRef.current) {
+                    const w = containerRef.current.offsetWidth;
+                    setSightPos({ x: w - 130, y: 10 });
+                }
+            }, []);
+
+            const loadScenario = (s) => {
+                setCb(s.cb); setOb(s.ob); setAim(s.aim);
+                setFixedAngle(null);
+                setShowScenarios(false);
+            };
+
+            const calculateVectors = (c, o, a) => {
+                const dxOB = a.x - o.x, dyOB = a.y - o.y;
+                const dOB = Math.sqrt(dxOB*dxOB + dyOB*dyOB) || 1;
+                const ux = dxOB/dOB, uy = dyOB/dOB;
+                const gbX = o.x - (ux * BALL_R * 2);
+                const gbY = o.y - (uy * BALL_R * 2);
+                const dxAtt = gbX - c.x, dyAtt = gbY - c.y;
+                const ax = dxAtt/(Math.sqrt(dxAtt*dxAtt+dyAtt*dyAtt)||1), ay = dyAtt/(Math.sqrt(dxAtt*dxAtt+dyAtt*dyAtt)||1);
+                const dot = ax * ux + ay * uy;
+                const rad = Math.acos(Math.max(-1, Math.min(1, dot)));
+                const deg = (rad * 180) / Math.PI;
+                const cross = ax * uy - ay * ux;
+                const dir = cross < 0 ? 1 : -1;
+                const tx = -uy * dir, ty = ux * dir;
+                return { gbX, gbY, deg, rad, tx, ty, ux, uy, dir };
+            };
+
+            const updateSimulation = (c, o, a) => {
+                const data = calculateVectors(c, o, a);
+                setDisplayAngle(data.deg);
+                const m = PLAY_AREA_MARGIN; 
+                setIsValid(c.x >= m && c.x <= TABLE_W-m && c.y >= m && c.y <= TABLE_H-m && o.x >= m && o.x <= TABLE_W-m && o.y >= m && o.y <= TABLE_H-m && data.deg <= 88);
+            };
+
+            useEffect(() => updateSimulation(cb, ob, aim), [cb, ob, aim]);
+
+            const applyPreset = (deg, forceToggle = false) => {
+                let newSide = cutSide;
+                if (fixedAngle === deg || forceToggle) newSide = cutSide * -1;
+                setFixedAngle(deg);
+                setCutSide(newSide);
+                const dx = aim.x - ob.x, dy = aim.y - ob.y;
+                const dOB = Math.sqrt(dx*dx + dy*dy) || 1;
+                const ux = dx/dOB, uy = dy/dOB;
+                const gbX = ob.x - (ux * BALL_R * 2), gbY = ob.y - (uy * BALL_R * 2);
+                const impactAngle = Math.atan2(uy, ux);
+                const rad = (deg * Math.PI / 180);
+                const approachAngle = impactAngle + Math.PI + (rad * newSide);
+                
+                let dist = 200;
+                let nx = gbX + dist * Math.cos(approachAngle);
+                let ny = gbY + dist * Math.sin(approachAngle);
+                
+                const m = PLAY_AREA_MARGIN;
+                if(nx < m || nx > TABLE_W-m || ny < m || ny > TABLE_H-m) {
+                    dist = 100;
+                    nx = gbX + dist * Math.cos(approachAngle);
+                    ny = gbY + dist * Math.sin(approachAngle);
+                }
+                nx = Math.max(m, Math.min(TABLE_W-m, nx));
+                ny = Math.max(m, Math.min(TABLE_H-m, ny));
+
+                setCb({ x: nx, y: ny });
+            };
+
+            useEffect(() => {
+                if (fixedAngle !== null && dragging.current !== 'cb') {
+                    applyPreset(fixedAngle);
+                }
+            }, [ob, aim]);
+
+            const getPathData = () => {
+                const v = calculateVectors(cb, ob, aim);
+                const maxLen = 600 * (speed / 100); 
+                const stunX = v.gbX + v.tx * maxLen;
+                const stunY = v.gbY + v.ty * maxLen;
+                let pathD = "";
+                
+                const getBounce = (x1, y1, x2, y2) => {
+                    let tx = x2, ty = y2, hit = false;
+                    const m = PLAY_AREA_MARGIN;
+                    if(tx > TABLE_W-m) { tx=TABLE_W-m; ty=y1+(y2-y1)*((TABLE_W-m-x1)/(x2-x1)); hit=true; }
+                    else if(tx < m) { tx=m; ty=y1+(y2-y1)*((m-x1)/(x2-x1)); hit=true; }
+                    if(ty > TABLE_H-m) { ty=TABLE_H-m; tx=x1+(x2-x1)*((TABLE_H-m-y1)/(y2-y1)); hit=true; }
+                    else if(ty < m) { ty=m; tx=x1+(x2-x1)*((m-y1)/(y2-y1)); hit=true; }
+                    return {x:tx, y:ty, hit};
+                };
+
+                if (spin === 'center') {
+                    const b = getBounce(v.gbX, v.gbY, stunX, stunY);
+                    pathD = `M ${v.gbX} ${v.gbY} L ${b.x} ${b.y}`;
+                    if(b.hit) {
+                        const m = PLAY_AREA_MARGIN;
+                        const remX = (stunX - b.x) * (b.x===m||b.x===TABLE_W-m?-1:1);
+                        const remY = (stunY - b.y) * (b.y===m||b.y===TABLE_H-m?-1:1);
+                        pathD += ` L ${b.x + remX} ${b.y + remY}`;
+                    }
                 } else {
-                    const pivotedRoot = transpose(notes[0], 12); // C4 -> C5
-                    notesToPlay = [notes[1], notes[2], notes[3], pivotedRoot]; // [E4, G4, B4, C5]
-                    scaleInfo = notesToPlay.map((n, i) => ({note: n, isExtra: i === 3, durationFactor: 1})); // Marcar C5 como "extra"
+                    const cpDist = 30 + (speed * 0.5);
+                    const cpX = v.gbX + v.tx * cpDist, cpY = v.gbY + v.ty * cpDist;
+                    const bend = 80;
+                    let endX, endY;
+                    if (spin === 'top') {
+                        endX = stunX + (v.ux * bend * (speed/60));
+                        endY = stunY + (v.uy * bend * (speed/60));
+                    } else {
+                        endX = stunX - (v.ux * bend * ((120-speed)/80));
+                        endY = stunY - (v.uy * bend * ((120-speed)/80));
+                    }
+                    pathD = `M ${v.gbX} ${v.gbY} Q ${cpX} ${cpY} ${endX} ${endY}`;
                 }
-                playAnimatedScale(scaleInfo, pianoContainerImpro, 'highlighted');
-            }
-            
-            btnPivotArpeggioNormal.onclick = () => playPivotArpeggios(false);
-            btnPivotArpeggioPivot.onclick = () => playPivotArpeggios(true);
-            pivotRootSelect.onchange = () => { highlightKeys(pianoContainerImpro, []); noteDisplayImpro.textContent = ''; };
-            pivotQualitySelect.onchange = () => { highlightKeys(pianoContainerImpro, []); noteDisplayImpro.textContent = ''; };
-
-
-            tabButtons.forEach(button => { button.onclick = () => { const tabId = button.dataset.tab; tabButtons.forEach(btn => btn.classList.remove('active')); button.classList.add('active'); tabContents.forEach(content => { content.classList.toggle('active', content.id === tabId); }); highlightKeys(pianoContainer251); highlightKeys(pianoContainerDiminished); highlightKeys(pianoContainerImpro); highlightKeys(pianoContainerOutlines); highlightKeys(pianoContainerLick); inversionControls251.classList.add('hidden'); noteDisplay251.textContent = ''; noteDisplayDiminished.textContent = ''; noteDisplayImpro.textContent = ''; noteDisplayOutlines.textContent = ''; noteDisplayLick.textContent = ''; stopAnimatedScale(); }; });
-
-            let concepts251 = []; let currentConceptIndex251 = 0;
-            function generateConcepts251(keyTonicRoot) { const k=transpose(keyTonicRoot,12); const iiR=transpose(k,2); const VR=transpose(k,7); const IR=k; const adjOct=(n)=>{if(!n)return 'C3';let i=ALL_NOTES.indexOf(n);if(i>=ALL_NOTES.indexOf('C4'))return transpose(n,-12);if(i<ALL_NOTES.indexOf('F2'))return transpose(n,12);return n;}; const iiB=transpose(iiR,-12); const VB=transpose(VR,-12); const IB=transpose(IR,-12); const iiN=getNoteName(iiR); const VN=getNoteName(VR); const IN=getNoteName(IR); const iiB3N=transpose(iiR,3); const iiB3Nm=getNoteName(iiB3N); const iiB7N=transpose(iiR,10); const iiB7Nm=getNoteName(iiB7N); const V5N=transpose(VR,7); const V5Nm=getNoteName(V5N); const VB7N=transpose(VR,10); const VB7Nm=getNoteName(VB7N); const VB2N=transpose(VR,1); const VB2Nm=getNoteName(VB2N); const I5N=transpose(IR,7); const I5Nm=getNoteName(I5N); const sortN=(a)=>a.sort((x,y)=>ALL_NOTES.indexOf(x)-ALL_NOTES.indexOf(y)); const std_ii=sortN([adjOct(iiR),adjOct(transpose(iiR,3)),adjOct(transpose(iiR,7)),adjOct(transpose(iiR,10))]); const std_V=sortN([adjOct(VR),adjOct(transpose(VR,4)),adjOct(transpose(VR,7)),adjOct(transpose(VR,10))]); const std_I=sortN([adjOct(IR),adjOct(transpose(IR,4)),adjOct(transpose(IR,7)),adjOct(transpose(IR,11))]); const c1=sortN([adjOct(iiB3N),adjOct(transpose(iiB3N,4)),adjOct(transpose(iiB3N,7)),adjOct(transpose(iiB3N,9))]); const c2=sortN([adjOct(iiB7N),adjOct(transpose(iiB7N,4)),adjOct(transpose(iiB7N,7)),adjOct(transpose(iiB7N,9))]); const c3=sortN([adjOct(V5N),adjOct(transpose(V5N,3)),adjOct(transpose(V5N,7)),adjOct(transpose(V5N,9))]); const c4=sortN([adjOct(VB7N),adjOct(transpose(VB7N,4)),adjOct(transpose(VB7N,7)),adjOct(transpose(VB7N,9))]); const c5=sortN([adjOct(VB7N),adjOct(transpose(VB7N,3)),adjOct(transpose(VB7N,7)),adjOct(transpose(VB7N,9))]); const c6=sortN([adjOct(VB2N),adjOct(transpose(VB2N,3)),adjOct(transpose(VB2N,7)),adjOct(transpose(VB2N,9))]); const c7=sortN([adjOct(IR),adjOct(transpose(IR,4)),adjOct(transpose(IR,7)),adjOct(transpose(IR,9))]); const c8=sortN([adjOct(I5N),adjOct(transpose(I5N,4)),adjOct(transpose(I5N,7)),adjOct(transpose(I5N,9))]); return [ { title: `1. II (${iiN}m7)`, subtitle: `Sust: ${iiB3Nm}6`, description: `En lugar de ${iiN}m7, usamos un ${iiB3Nm}6. ¡Son las mismas notas! El sistema de Harris prefiere el acorde de 6ª. El bajo se mantiene en ${iiN}.`, standardChord: { name: `${iiN}m7`, notes: std_ii }, harrisChord: { name: `${iiB3Nm}6 / ${iiN}`, notes: [iiB,...c1], chordNotes: c1, bassNote: iiB, inversions: getChordInversions(c1) } }, { title: `2. II (${iiN}m7)`, subtitle: `Sust: ${iiB7Nm}6`, description: `Otra opción para el II (${iiN}m7) es usar un ${iiB7Nm}6 sobre el bajo de ${iiN}. Esto crea un sonido más complejo, un color diferente.`, standardChord: { name: `${iiN}m7`, notes: std_ii }, harrisChord: { name: `${iiB7Nm}6 / ${iiN}`, notes: [iiB,...c2], chordNotes: c2, bassNote: iiB, inversions: getChordInversions(c2) } }, { title: `3. V (${VN}7)`, subtitle: `Sust: ${V5Nm}m6`, description: `Para un sonido ${VN}9, usamos un ${V5Nm}m6 sobre el bajo de ${VN}. El ${V5Nm}m6 añade la 9ª y la 3ª al acorde de ${VN}7.`, standardChord: { name: `${VN}7`, notes: std_V }, harrisChord: { name: `${V5Nm}m6 / ${VN}`, notes: [VB,...c3], chordNotes: c3, bassNote: VB, inversions: getChordInversions(c3) } }, { title: `4. V (${VN}7)`, subtitle: `Sust: ${VB7Nm}6`, description: `Para un sonido ${VN}7sus4, usamos un ${VB7Nm}6 sobre el bajo de ${VN}. El acorde de ${VB7Nm}6 introduce la 4ª y elimina la 3ª.`, standardChord: { name: `${VN}7`, notes: std_V }, harrisChord: { name: `${VB7Nm}6 / ${VN}`, notes: [VB,...c4], chordNotes: c4, bassNote: VB, inversions: getChordInversions(c4) } }, { title: `5. V (${VN}7)`, subtitle: `Sust: ${VB7Nm}m6`, description: `Para más tensión (${VN}7sus4(b9)), usamos ${VB7Nm}m6 sobre ${VN}. El ${VB7Nm}m6 introduce la 4ª y la b9.`, standardChord: { name: `${VN}7`, notes: std_V }, harrisChord: { name: `${VB7Nm}m6 / ${VN}`, notes: [VB,...c5], chordNotes: c5, bassNote: VB, inversions: getChordInversions(c5) } }, { title: `6. V (${VN}7)`, subtitle: `Sust: ${VB2Nm}m6`, description: `Para tensión máxima (${VN}7alt), usamos ${VB2Nm}m6 sobre ${VN}. Esto introduce la b9 y la #5. ¡Una sustitución muy poderosa!`, standardChord: { name: `${VN}7`, notes: std_V }, harrisChord: { name: `${VB2Nm}m6 / ${VN}`, notes: [VB,...c6], chordNotes: c6, bassNote: VB, inversions: getChordInversions(c6) } }, { title: `7. I (${IN}Maj)`, subtitle: `Sust: ${IN}6`, description: `El sistema de Harris resuelve por defecto al acorde de 6ª Mayor (${IN}6) en lugar del Maj7.`, standardChord: { name: `${IN}maj7`, notes: std_I }, harrisChord: { name: `${IN}6`, notes: [IB,...c7], chordNotes: c7, bassNote: IB, inversions: getChordInversions(c7) } }, { title: `8. I (${IN}Maj)`, subtitle: `Sust: ${I5Nm}6`, description: `Para una resolución más rica (${IN}maj9), usamos un ${I5Nm}6 sobre el bajo de ${IN}. Esto añade la 9ª al acorde de ${IN}.`, standardChord: { name: `${IN}maj7`, notes: std_I }, harrisChord: { name: `${I5Nm}6 / ${IN}`, notes: [IB,...c8], chordNotes: c8, bassNote: IB, inversions: getChordInversions(c8) } } ]; } 
-            function loadConcept251(i) { if (!concepts251 || !concepts251[i]) return; const c = concepts251[i]; conceptTitleEl251.textContent = c.title; conceptSubtitleEl251.textContent = c.subtitle; conceptDescriptionEl251.textContent = c.description; btnStandard251.textContent = `Oír ${c.standardChord.name}`; btnHarris251.textContent = `Oír ${c.harrisChord.name}`; stepIndicator251.textContent = `Paso ${i + 1}/${concepts251.length}`; highlightKeys(pianoContainer251); inversionControls251.classList.add('hidden'); btnPrev251.disabled=(i===0); btnNext251.disabled=(i===concepts251.length-1); }
-            function updateApp251() { const key = keySelect251.value; concepts251 = generateConcepts251(KEY_ROOT_NOTES[key]); currentConceptIndex251 = 0; loadConcept251(0); inversionControls251.classList.add('hidden'); }
-            btnPrev251.onclick = () => { if (currentConceptIndex251 > 0) loadConcept251(--currentConceptIndex251); }; btnNext251.onclick = () => { if (currentConceptIndex251 < concepts251.length - 1) loadConcept251(++currentConceptIndex251); };
-            btnStandard251.onclick = () => { const c = concepts251[currentConceptIndex251]; highlightKeys(pianoContainer251, c.standardChord.notes); playChord(c.standardChord.notes); inversionControls251.classList.add('hidden'); }; btnHarris251.onclick = () => { const c = concepts251[currentConceptIndex251]; highlightKeys(pianoContainer251, c.harrisChord.notes, c.harrisChord.bassNote); playChord(c.harrisChord.notes); inversionControls251.classList.remove('hidden'); }; keySelect251.onchange = updateApp251;
-            function playInversion(idx) { const c = concepts251[currentConceptIndex251]; if (!c?.harrisChord?.inversions?.[idx] || c.harrisChord.inversions[idx].length === 0) { return; } const notesToPlayAndHighlight = c.harrisChord.inversions[idx]; highlightKeys(pianoContainer251, notesToPlayAndHighlight); playChord(notesToPlayAndHighlight); updateNoteDisplay(pianoContainer251, notesToPlayAndHighlight); } 
-            btnInv0.onclick=()=>playInversion(0); btnInv1.onclick=()=>playInversion(1); btnInv2.onclick=()=>playInversion(2); btnInv3.onclick=()=>playInversion(3); 
-
-            let currentDiminishedConcepts = {};
-            function getMajor6DiminishedScale(r){ const M6=[r,transpose(r,4),transpose(r,7),transpose(r,9)]; const dim=[transpose(r,2),transpose(r,5),transpose(r,8),transpose(r,11)]; const scale = [...M6,...dim].sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b)); return { scale, chord: M6.sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b)), dim: dim.sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b)) }; } 
-            function getMinor6DiminishedScale(r){ const m6=[r,transpose(r,3),transpose(r,7),transpose(r,9)]; const dim=[transpose(r,2),transpose(r,5),transpose(r,8),transpose(r,11)]; const scale = [...m6,...dim].sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b)); return { scale, chord: m6.sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b)), dim: dim.sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b)) }; } 
-            function generateDiminishedConcepts(k){const bN=SCALE_KEY_ROOT_NOTES[k];const bD=[bN,transpose(bN,3),transpose(bN,6),transpose(bN,9)].sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b));const uD=[transpose(bN,1),transpose(bN,4),transpose(bN,7),transpose(bN,10)].sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b));const dD=[transpose(bN,-1),transpose(bN,2),transpose(bN,5),transpose(bN,8)].sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b));const V7s=dD.map((n,i)=>({name:`${getNoteName(n)}7`,notes:bD.map((bn,j)=>i===j?n:bn).sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b)),bass:transpose(n,-12),desc:`(↓${getNoteName(bD[i])})`}));const m7b5s=uD.map((n,i)=>({name:`${getNoteName(transpose(bD[i],2))}m7b5`,notes:bD.map((bn,j)=>i===j?n:bn).sort((a,b)=>ALL_NOTES.indexOf(a)-ALL_NOTES.indexOf(b)),bass:transpose(transpose(bD[i],2),-12),desc:`(↑${getNoteName(bD[i])})`}));return{baseDimChord:bD,upDimChord:uD,downDimChord:dD,generatedDominants:V7s,generatedM7b5s:m7b5s};}
-            function updateAppDiminished(){const k=keySelectDiminished.value;currentDiminishedConcepts=generateDiminishedConcepts(k);highlightKeys(pianoContainerDiminished);btnDimUp.textContent=currentDiminishedConcepts.upDimChord.map(getNoteName).join(' - ');btnDimBase.textContent=currentDiminishedConcepts.baseDimChord.map(getNoteName).join(' - ');btnDimDown.textContent=currentDiminishedConcepts.downDimChord.map(getNoteName).join(' - ');domButtonsContainer.innerHTML='';currentDiminishedConcepts.generatedDominants.forEach(c=>{const b=document.createElement('button');b.className='w-full bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-3 rounded-lg text-left transition-all';b.innerHTML=`Oír <strong class="text-amber-400">${c.name}</strong> <span class="text-xs text-zinc-400">${c.desc}</span>`;b.onclick=()=>{const n=[c.bass,...c.notes];highlightKeys(pianoContainerDiminished,n,c.bass);playChord(n);};domButtonsContainer.appendChild(b);});m7b5ButtonsContainer.innerHTML='';currentDiminishedConcepts.generatedM7b5s.forEach(c=>{const b=document.createElement('button');b.className='w-full bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-2 px-3 rounded-lg text-left transition-all';b.innerHTML=`Oír <strong class="text-amber-400">${c.name}</strong> <span class="text-xs text-zinc-400">${c.desc}</span>`;b.onclick=()=>{const n=[c.bass,...c.notes];highlightKeys(pianoContainerDiminished,n,c.bass);playChord(n);};m7b5ButtonsContainer.appendChild(b);});}
-            btnDimBase.onclick=()=>{const c=currentDiminishedConcepts.baseDimChord;highlightKeys(pianoContainerDiminished,c);playChord(c);}; btnDimUp.onclick=()=>{const c=currentDiminishedConcepts.upDimChord;highlightKeys(pianoContainerDiminished,c);playChord(c);}; btnDimDown.onclick=()=>{const c=currentDiminishedConcepts.downDimChord;highlightKeys(pianoContainerDiminished,c);playChord(c);}; keySelectDiminished.onchange=updateAppDiminished;
-            
-            function updateDimScaleButtonText() {
-                const rootName = keySelectScales.value;
-                const rootNote = SCALE_KEY_ROOT_NOTES[rootName];
-                const { chord: majChord, dim: majDim } = getMajor6DiminishedScale(rootNote);
-                const { chord: minChord, dim: minDim } = getMinor6DiminishedScale(rootNote);
-                
-                btnMaj6Chord.textContent = `Oír Acorde ${getNoteName(majChord[0])}6`;
-                btnMaj6DimChord.textContent = `Oír Acorde ${getNoteName(majDim[0])}dim7`; 
-                btnMin6Chord.textContent = `Oír Acorde ${getNoteName(minChord[0])}m6`;
-                btnMin6DimChord.textContent = `Oír Acorde ${getNoteName(minDim[0])}dim7`;
-            }
-            btnMaj6Chord.onclick = () => { const r = SCALE_KEY_ROOT_NOTES[keySelectScales.value]; const { chord } = getMajor6DiminishedScale(r); playAnimatedScale(chord.map(n => ({note: n, isExtra: false})), pianoContainerDiminished, 'highlighted'); };
-            btnMaj6DimChord.onclick = () => { const r = SCALE_KEY_ROOT_NOTES[keySelectScales.value]; const { dim } = getMajor6DiminishedScale(r); playAnimatedScale(dim.map(n => ({note: n, isExtra: true})), pianoContainerDiminished, 'highlighted'); };
-            btnMaj6DimScale.onclick=()=>{ const root = SCALE_KEY_ROOT_NOTES[keySelectScales.value]; const { scale: scaleNotes, chord: chordNotes, dim: dimNotes } = getMajor6DiminishedScale(root); const rootIndex = scaleNotes.findIndex(n => getNoteName(n) === getNoteName(root)); const reorderedScale = (rootIndex !== -1) ? [...scaleNotes.slice(rootIndex), ...scaleNotes.slice(0, rootIndex)] : scaleNotes; const scaleInfo = reorderedScale.map(n => ({ note: n, isExtra: dimNotes.some(dn => getNoteName(dn) === getNoteName(n)) })); playAnimatedScale(scaleInfo, pianoContainerDiminished, 'highlighted'); }; 
-            btnMin6Chord.onclick = () => { const r = SCALE_KEY_ROOT_NOTES[keySelectScales.value]; const { chord } = getMinor6DiminishedScale(r); playAnimatedScale(chord.map(n => ({note: n, isExtra: false})), pianoContainerDiminished, 'highlighted'); };
-            btnMin6DimChord.onclick = () => { const r = SCALE_KEY_ROOT_NOTES[keySelectScales.value]; const { dim } = getMinor6DiminishedScale(r); playAnimatedScale(dim.map(n => ({note: n, isExtra: true})), pianoContainerDiminished, 'highlighted'); };
-            btnMin6DimScale.onclick=()=>{ const root = SCALE_KEY_ROOT_NOTES[keySelectScales.value]; const { scale: scaleNotes, chord: chordNotes, dim: dimNotes } = getMinor6DiminishedScale(root); const rootIndex = scaleNotes.findIndex(n => getNoteName(n) === getNoteName(root)); const reorderedScale = (rootIndex !== -1) ? [...scaleNotes.slice(rootIndex), ...scaleNotes.slice(0, rootIndex)] : scaleNotes; const scaleInfo = reorderedScale.map(n => ({ note: n, isExtra: dimNotes.some(dn => getNoteName(dn) === getNoteName(n)) })); playAnimatedScale(scaleInfo, pianoContainerDiminished, 'highlighted'); }; 
-            keySelectScales.onchange=()=>{ highlightKeys(pianoContainerDiminished); updateDimScaleButtonText(); };
-
-             function highlightKeys(container, notes = [], bassNote = null) {
-                 if (!container) return; 
-                 container.querySelectorAll('.piano-key').forEach(key => { 
-                     key.classList.remove('highlighted', 'highlighted-bass', 'highlighted-extra', 'highlighted-outline'); 
-                 }); 
-                 
-                 const displayNotes = [...notes]; 
-                 notes.forEach(note => { 
-                     if (!note) return; 
-                     const keyEl = container.querySelector(`.piano-key[data-note="${note}"]`); 
-                     if (keyEl) { 
-                         const isBass = note === bassNote;
-                         let isExtra = false;
-                         if (container === pianoContainerDiminished) {
-                             const root = SCALE_KEY_ROOT_NOTES[keySelectScales.value];
-                             const { dim: majDim } = getMajor6DiminishedScale(root);
-                             const { dim: minDim } = getMinor6DiminishedScale(root);
-                             const noteName = getNoteName(note);
-                             if (majDim.some(dn => getNoteName(dn) === noteName) || minDim.some(dn => getNoteName(dn) === noteName)) {
-                                 isExtra = true;
-                             }
-                         }
-                         if ((container === pianoContainerImpro || container === pianoContainerLick) && notes.length === 4) { 
-                              const pivotRootName = pivotRootSelect.value;
-                              if(getNoteName(note) === pivotRootName && ALL_NOTES.indexOf(note) >= ALL_NOTES.indexOf('C5')) isExtra = true;
-                         }
-                         
-                         keyEl.classList.add(isBass ? 'highlighted-bass' : (isExtra ? 'highlighted-extra' : 'highlighted')); 
-                     } 
-                 }); 
-                 
-                 if (container.id !== 'piano-container-251' || inversionControls251.classList.contains('hidden') || notes.length === 0) { 
-                     updateNoteDisplay(container, displayNotes); 
-                 } 
-             }
-             
-             const outlineDefinitions = {
-                  "blues": {
-                      name: "Blues", measureCount: 12,
-                      sections: [ 
-                           { interval: 0, type: 'dominant', direction: 'up', duration: 1, id: "b-1" }, 
-                           { interval: 5, type: 'dominant', direction: 'up', duration: 1, id: "b-2" },
-                           { interval: 0, type: 'dominant', direction: 'up', duration: 1, id: "b-3" },
-                           { interval: 0, type: 'dominant', direction: 'down', duration: 1, id: "b-4" },
-                           { interval: 5, type: 'dominant', direction: 'up', duration: 1, id: "b-5" },
-                           { interval: 5, type: 'dominant', direction: 'down', duration: 1, id: "b-6" },
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "b-7" },
-                           { interval: 9, type: 'dominant', direction: 'down', duration: 1, id: "b-8" },
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "b-9" },
-                           { interval: 7, type: 'dominant', direction: 'down', duration: 1, id: "b-10" },
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "b-11" },
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "b-12" },
-                      ]
-                  },
-                  "rhythm": {
-                       name: "Rhythm Changes", measureCount: 32,
-                       sections: [
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "r-a1-1" },
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "r-a1-2" },
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "r-a1-3" },
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "r-a1-4" },
-                           { interval: 0, type: 'dominant', direction: 'up', duration: 1, id: "r-a1-5" },
-                           { interval: 5, type: 'dominant', direction: 'up', duration: 1, id: "r-a1-6" },
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "r-a1-7" },
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "r-a1-8" },
-                           
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "r-a2-1" },
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "r-a2-2" },
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "r-a2-3" },
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "r-a2-4" },
-                           { interval: 0, type: 'dominant', direction: 'up', duration: 1, id: "r-a2-5" },
-                           { interval: 5, type: 'dominant', direction: 'up', duration: 1, id: "r-a2-6" },
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "r-a2-7" },
-                           { interval: 0, type: 'major', direction: 'down', duration: 1, id: "r-a2-8" }, 
-
-                           { interval: 2, type: 'dominant', direction: 'up', duration: 1, id: "r-b-1" }, 
-                           { interval: 2, type: 'dominant', direction: 'down', duration: 1, id: "r-b-2" }, 
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "r-b-3" }, 
-                           { interval: 7, type: 'dominant', direction: 'down', duration: 1, id: "r-b-4" }, 
-                           { interval: 2, type: 'dominant', direction: 'up', duration: 1, id: "r-b-5" }, 
-                           { interval: 2, type: 'dominant', direction: 'down', duration: 1, id: "r-b-6" }, 
-                           { interval: 5, type: 'dominant', direction: 'up', duration: 1, id: "r-b-7" }, 
-                           { interval: 5, type: 'dominant', direction: 'down', duration: 1, id: "r-b-8" }, 
-                           
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "r-a3-1" },
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "r-a3-2" },
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "r-a3-3" },
-                           { interval: 7, type: 'dominant', direction: 'up', duration: 1, id: "r-a3-4" },
-                           { interval: 0, type: 'dominant', direction: 'up', duration: 1, id: "r-a3-5" },
-                           { interval: 5, type: 'dominant', direction: 'up', duration: 1, id: "r-a3-6" },
-                           { interval: 0, type: 'major', direction: 'up', duration: 1, id: "r-a3-7" },
-                           { interval: 0, type: 'major', direction: 'down', duration: 1, id: "r-a3-8" },
-                       ]
-                  }
-             };
-             
-             function getFullOutline(schemeKey, tonicNote) {
-                 const definition = outlineDefinitions[schemeKey];
-                 if (!definition) return { name: "Error", measureCount: 0, measures: [] };
-
-                 const transposedSections = definition.sections.map((s, i) => {
-                      const transposedRoot = transpose(tonicNote, s.interval);
-                      return {
-                           ...s,
-                           id: s.id || `${i}-${s.interval}`,
-                           transposedRoot: getNoteName(transposedRoot),
-                           transposedChordName: getChordNameFromInterval(tonicNote, s.interval, s.type)
-                      };
-                 });
-
-                 const measureMap = {};
-                 let measureCounter = 1;
-                 let durationCounter = 0;
-                 transposedSections.forEach(s => {
-                     s.comp = measureCounter; 
-                     if (!measureMap[measureCounter]) measureMap[measureCounter] = [];
-                     measureMap[measureCounter].push(s);
-                     
-                     durationCounter += s.duration;
-                     if (durationCounter >= 1) {
-                         measureCounter++;
-                         durationCounter = 0;
-                     }
-                 });
-
-                 const finalMeasures = [];
-                 for (let i = 1; i <= definition.measureCount; i++) {
-                      finalMeasures.push({
-                           measureNumber: `${i}`,
-                           sections: measureMap[i] || [], 
-                           span: 1 
-                      });
-                 }
-
-                 return {
-                      name: `${definition.name} (en ${getNoteName(tonicNote)})`,
-                      measureCount: definition.measureCount,
-                      measures: finalMeasures, 
-                      fullSequence: transposedSections 
-                 };
-             }
-
-             function getScaleNotesForOutline(r, t, d) { 
-                 const k = (t === 'major' || t === 'dominant') ? t : 'dominant'; 
-                 let f = scaleFormulas[k]; 
-                 if (!f) f = scaleFormulas['dominant']; 
-                 if (!f) return []; 
-                 const l = f.length; 
-                 const rI = ALL_NOTES.indexOf(r); 
-                 if (rI === -1) return []; 
-                 const nU = []; 
-                 for (let i = 0; i < l; i++) { 
-                     let n = transpose(r, f[i]); 
-                     while(ALL_NOTES.indexOf(n) < ALL_NOTES.indexOf('C3')) n=transpose(n,12); 
-                     while(ALL_NOTES.indexOf(n) > ALL_NOTES.indexOf('B4')) n=transpose(n,-12); 
-                     nU.push(n); 
-                 } 
-                 nU.sort((a,b) => ALL_NOTES.indexOf(a) - ALL_NOTES.indexOf(b)); 
-                 if (d === 'up') { return nU.map(n => ({ note: n, isExtra: false, direction: 'up' })); } 
-                 else if (d === 'down') { 
-                     const nD = [...nU].reverse(); 
-                     return nD.map(n => ({ note: n, isExtra: false, direction: 'down' }));
-                 }
-                 else if (d === 'up-down') { const nD = [...nU].reverse().slice(1); return [...nU.map(n => ({ note: n, isExtra: false, direction: 'up' })), ...nD.map(n => ({ note: n, isExtra: false, direction: 'down' }))]; } 
-                 else if (d === 'pause') { return [{ note: null, isExtra: false, direction: 'pause' }]; } 
-                 return []; 
-             }
-             
-             function updateOutlineDisplay() { 
-                 const schemeKey = outlineSelect.value; 
-                 const tonicKey = outlineKeySelect.value; 
-                 const tonicNote = SCALE_KEY_ROOT_NOTES[tonicKey]; 
-                 const outline = getFullOutline(schemeKey, tonicNote); 
-                 outlineNameDisplay.textContent = outline.name; 
-                 outlineGridContainer.innerHTML = ""; 
-                 
-                 outline.measures.forEach(measure => {
-                     const box = document.createElement('div');
-                     box.className = `measure-box ${measure.span === 2 ? 'span-2' : ''}`; 
-                     box.id = `measure-box-${measure.measureNumber}`;
-                     const title = document.createElement('h5');
-                     title.textContent = `Compás ${measure.measureNumber}`;
-                     box.appendChild(title);
-                     const sections = measure.sections || [];
-                     if (sections.length === 0) {
-                         box.innerHTML += `<p class="chord opacity-50">-</p><p class="scale opacity-50">-</p>`;
-                     } else {
-                         sections.forEach((s) => {
-                             const cont = document.createElement('div');
-                             cont.style.position = 'relative';
-                             if (sections.length > 1) cont.style.marginBottom = '0.5rem';
-                             const chord = document.createElement('p');
-                             chord.className = 'chord';
-                             chord.textContent = s.transposedChordName;
-                             const scale = document.createElement('p');
-                             scale.className = 'scale';
-                             scale.textContent = s.direction === 'up' ? '↑' : (s.direction === 'down' ? '↓' : (s.direction === 'up-down' ? '↑↓' : '-')); 
-                             const btn = document.createElement('button');
-                             btn.className = 'play-measure-btn';
-                             btn.innerHTML = '&#9658;';
-                             btn.onclick = (e) => {
-                                 e.stopPropagation(); stopAnimatedScale();
-                                 const rootNoteForScale = SCALE_KEY_ROOT_NOTES[s.transposedRoot];
-                                 if (!rootNoteForScale) { console.error("Raíz no válida para escala:", s.transposedRoot); return; }
-                                 const notes = getScaleNotesForOutline(rootNoteForScale, s.type, s.direction);
-                                 const durationPerNote = 0.25; 
-                                 playAnimatedScale(notes, pianoContainerOutlines, 'highlighted-outline', durationPerNote); 
-                                 document.querySelectorAll('.measure-box.playing').forEach(b => b.classList.remove('playing'));
-                                 box.classList.add('playing');
-                                 let totalDuration = notes.length * (durationPerNote * 1000) + 100;
-                                 setTimeout(() => box.classList.remove('playing'), totalDuration);
-                             };
-                             cont.appendChild(chord); cont.appendChild(scale);
-                             if (s.direction !== 'pause') cont.appendChild(btn);
-                             box.appendChild(cont);
-                         });
-                     }
-                     outlineGridContainer.appendChild(box);
-                 });
-                 highlightKeys(pianoContainerOutlines); 
-                 btnPlayOutline.disabled = false; 
-                 stopAnimatedScale(); 
-             }
-
-              async function playOutlineSequence() { 
-                  stopAnimatedScale(); btnPlayOutline.disabled = true; highlightKeys(pianoContainerOutlines); 
-                  noteDisplayOutlines.textContent = "Reproduciendo..."; 
-                  const schemeKey = outlineSelect.value; 
-                  const tonicKey = outlineKeySelect.value; 
-                  const tonicNote = SCALE_KEY_ROOT_NOTES[tonicKey]; 
-                  const outline = getFullOutline(schemeKey, tonicNote); 
-                  if (!outline?.fullSequence) { btnPlayOutline.disabled = false; return; }
-                  let currentMeasureBox = null; 
-                  
-                  for (const s of outline.fullSequence) {
-                      if (scalePlaybackTimeout === null) break; 
-                      const measureNum = s.comp;
-                      const boxId = measureNum.toString(); 
-                      const newBox = boxId ? document.getElementById(`measure-box-${boxId}`) : null;
-                      if (newBox !== currentMeasureBox) { 
-                          if(currentMeasureBox) currentMeasureBox.classList.remove('playing'); 
-                          currentMeasureBox = newBox; 
-                          if(currentMeasureBox) currentMeasureBox.classList.add('playing'); 
-                      } 
-                      const rootNoteForScale = SCALE_KEY_ROOT_NOTES[s.transposedRoot];
-                      if (!rootNoteForScale) { continue; }
-                      const notes = getScaleNotesForOutline(rootNoteForScale, s.type, s.direction);
-                      let noteDuration = 0.25; 
-                      if (s.duration === 0.5) noteDuration = 0.2; 
-                      
-                      try { await playAnimatedScale(notes, pianoContainerOutlines, 'highlighted-outline', noteDuration); } 
-                      catch (e) { console.error("Error en playAnimatedScale:", e); break; } 
-                      if (s.direction !== 'pause') await new Promise(r => setTimeout(r, 20)); 
-                  }
-                  if (currentMeasureBox) currentMeasureBox.classList.remove('playing'); 
-                  highlightKeys(pianoContainerOutlines); btnPlayOutline.disabled = false; 
-                  noteDisplayOutlines.textContent = scalePlaybackTimeout === null ? "Cancelado." : "Finalizado."; 
-              }
-             
-             outlineSelect.onchange = updateOutlineDisplay; 
-             outlineKeySelect.onchange = updateOutlineDisplay; 
-             btnPlayOutline.onclick = playOutlineSequence;
-
-            const lickLibrary = {
-                'G': [
-                    { name: "Arpegio V7 (Regla 4)", description: "Arpegio V7 (sube) -> Escala V7 desc. (Regla 1: 1 extra)", notes: [{note: 'G3', isExtra: false, durationFactor: 1}, {note: 'B3', isExtra: false, durationFactor: 1}, {note: 'D4', isExtra: false, durationFactor: 1}, {note: 'F4', isExtra: false, durationFactor: 1}, {note: 'E4', isExtra: false, durationFactor: 1}, {note: 'D4', isExtra: false, durationFactor: 1}, {note: 'C4', isExtra: false, durationFactor: 1}, {note: 'B3', isExtra: true, durationFactor: 1}, {note: 'Bb3', isExtra: false, durationFactor: 1}, {note: 'A3', isExtra: false, durationFactor: 1}, {note: 'G3', isExtra: false, durationFactor: 1}] },
-                    { name: "Arpegio IIm7 (Regla 4)", description: "Arpegio IIm7 (sube) -> Escala V7 desc. (Regla 0: 0 extras)", notes: [{note: 'D3', isExtra: false, durationFactor: 1}, {note: 'F3', isExtra: false, durationFactor: 1}, {note: 'A3', isExtra: false, durationFactor: 1}, {note: 'C4', isExtra: false, durationFactor: 1}, {note: 'Bb3', isExtra: false, durationFactor: 1}, {note: 'A3', isExtra: false, durationFactor: 1}, {note: 'G3', isExtra: false, durationFactor: 1}, {note: 'F3', isExtra: false, durationFactor: 1}] },
-                    { name: "Tresillo (Regla 2)", description: "Inicio con Tresillo (gr. 2) -> Escala V7 desc. (Regla 1: 1 extra)", notes: [{note: 'A3', isExtra: false, durationFactor: 0.66}, {note: 'G3', isExtra: false, durationFactor: 0.66}, {note: 'F3', isExtra: false, durationFactor: 0.66}, {note: 'E3', isExtra: false, durationFactor: 1}, {note: 'D3', isExtra: false, durationFactor: 1}, {note: 'C3', isExtra: false, durationFactor: 1}, {note: 'B2', isExtra: true, durationFactor: 1}, {note: 'Bb2', isExtra: false, durationFactor: 1}] },
-                    { name: "Arp dim (Rel.)", description: "Arpegio dim7 (relativo) -> Escala V7 desc. (Regla 1: 1 extra)", notes: [{note: 'B3', isExtra: false, durationFactor: 1}, {note: 'D4', isExtra: false, durationFactor: 1}, {note: 'F4', isExtra: false, durationFactor: 1}, {note: 'Ab4', isExtra: false, durationFactor: 1}, {note: 'G4', isExtra: false, durationFactor: 1}, {note: 'F4', isExtra: false, durationFactor: 1}, {note: 'E4', isExtra: false, durationFactor: 1}, {note: 'Eb4', isExtra: true, durationFactor: 1}, {note: 'D4', isExtra: false, durationFactor: 1}, {note: 'C4', isExtra: false, durationFactor: 1}] }
-                ]
-            };
-            function updateLickV7Display() {
-                const tonicName = lickTonicSelect.value;
-                const v7Root = transpose(SCALE_KEY_ROOT_NOTES[tonicName], 7);
-                lickV7Display.textContent = `${getNoteName(v7Root)}7`;
-            }
-            btnGenerateLick.onclick = () => {
-                const tonicName = lickTonicSelect.value;
-                const v7RootName = getNoteName(transpose(SCALE_KEY_ROOT_NOTES[tonicName], 7));
-                
-                const baseKey = 'G';
-                const baseLicks = lickLibrary[baseKey];
-                if (!baseLicks) return;
-
-                const randomLickData = baseLicks[Math.floor(Math.random() * baseLicks.length)];
-                
-                const transposition = ALL_NOTES.indexOf(SCALE_KEY_ROOT_NOTES[v7RootName]) - ALL_NOTES.indexOf(SCALE_KEY_ROOT_NOTES[baseKey]);
-                
-                const transposedLick = randomLickData.notes.map(item => ({
-                    ...item,
-                    note: transpose(item.note, transposition)
-                }));
-                
-                lastGeneratedLick = {
-                    notes: transposedLick,
-                    formula: randomLickData.description,
-                    name: randomLickData.name,
-                    v7: `${v7RootName}7`
-                };
-                
-                lickFormulaDisplay.innerHTML = `<strong>Fórmula:</strong> ${randomLickData.name}<br><span class="text-xs text-zinc-400">${randomLickData.description}</span>`;
-                playAnimatedScale(transposedLick, pianoContainerLick, 'highlighted', 0.22); 
-                
-                btnRepeatLick.disabled = false;
-                btnSaveLick.disabled = false;
-            };
-            lickTonicSelect.onchange = updateLickV7Display;
-
-            btnRepeatLick.onclick = () => {
-                if (lastGeneratedLick.notes.length > 0) {
-                    playAnimatedScale(lastGeneratedLick.notes, pianoContainerLick, 'highlighted', 0.22);
-                }
+                return pathD;
             };
 
-            btnSaveLick.onclick = () => {
-                if (lastGeneratedLick.notes.length === 0) return;
-                
-                const savedLicks = getSavedLicks();
-                
-                const isDuplicate = savedLicks.some(lick => JSON.stringify(lick.notes) === JSON.stringify(lastGeneratedLick.notes));
-                if (isDuplicate) {
-                    lickFormulaDisplay.innerHTML += `<br><span class="text-rose-500">¡Frase ya guardada!</span>`;
-                    setTimeout(() => {
-                        lickFormulaDisplay.innerHTML = `<strong>Fórmula:</strong> ${lastGeneratedLick.name}<br><span class="text-xs text-zinc-400">${lastGeneratedLick.formula}</span>`;
-                    }, 2000);
+            const handleDrag = (e, type) => {
+                const rect = containerRef.current.getBoundingClientRect();
+                const isTouch = e.type.includes('touch');
+                const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+                const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
+                if (type === 'sight') {
+                    const lx = clientX - rect.left - 50; 
+                    const ly = clientY - rect.top - 50;
+                    const maxX = rect.width - 100, maxY = rect.height - 100;
+                    setSightPos({ x: Math.max(0, Math.min(maxX, lx)), y: Math.max(0, Math.min(maxY, ly)) });
                     return;
                 }
 
-                savedLicks.push(lastGeneratedLick);
-                try {
-                    localStorage.setItem(LICK_STORAGE_KEY, JSON.stringify(savedLicks));
-                } catch(e) {
-                    console.error("Error al guardar en localStorage:", e);
-                    lickFormulaDisplay.innerHTML += `<br><span class="text-rose-500">Error al guardar.</span>`;
-                }
-                renderSavedLicks();
+                const CTM = svgRef.current.getScreenCTM();
+                const x = (clientX - CTM.e) / CTM.a, y = (clientY - CTM.f) / CTM.d;
                 
-                btnSaveLick.disabled = true; 
-                lickFormulaDisplay.innerHTML += `<br><span class="text-lime-400">¡Guardada!</span>`;
-                setTimeout(() => {
-                     lickFormulaDisplay.innerHTML = `<strong>Fórmula:</strong> ${lastGeneratedLick.name}<br><span class="text-xs text-zinc-400">${lastGeneratedLick.formula}</span>`;
-                }, 2000);
+                const p = BALL_R; 
+                const bx = Math.max(p, Math.min(TABLE_W-p, x)), by = Math.max(p, Math.min(TABLE_H-p, y));
+
+                if (type === 'cb') { setCb({x:bx, y:by}); setFixedAngle(null); }
+                else if (type === 'ob') {
+                    const dx = aim.x - ob.x, dy = aim.y - ob.y;
+                    setOb({x:bx, y:by}); setAim({x:bx+dx, y:by+dy});
+                } else if (type === 'aim') { setAim({x, y}); }
             };
 
-            function getSavedLicks() {
-                try {
-                    const licks = localStorage.getItem(LICK_STORAGE_KEY);
-                    return licks ? JSON.parse(licks) : [];
-                } catch (e) {
-                    console.error("Error al leer licks guardados:", e);
-                    return [];
-                }
-            }
+            const startDrag = (e, type) => { if(e.cancelable) e.preventDefault(); dragging.current = type; document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove, {passive: false}); document.addEventListener('mouseup', onEnd); document.addEventListener('touchend', onEnd); };
+            const onMove = (e) => { if(dragging.current) handleDrag(e, dragging.current); };
+            const onEnd = () => { dragging.current = null; document.removeEventListener('mousemove', onMove); document.removeEventListener('touchmove', onMove); document.removeEventListener('mouseup', onEnd); document.removeEventListener('touchend', onEnd); };
 
-            function renderSavedLicks() {
-                const licks = getSavedLicks();
-                savedLicksContainer.innerHTML = ''; 
-                
-                if (licks.length === 0) {
-                    savedLicksSection.style.display = 'none';
-                    return;
-                }
-                
-                savedLicksSection.style.display = 'block';
-                
-                licks.forEach((lick, index) => {
-                    const lickEl = document.createElement('div');
-                    lickEl.className = 'p-3 bg-zinc-900 border border-zinc-700 rounded-lg flex justify-between items-center';
-                    lickEl.innerHTML = `
-                        <div>
-                            <p class="font-semibold text-amber-400">${lick.name} (sobre ${lick.v7})</p>
-                            <p class="text-xs text-zinc-400">${lick.formula}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="play-saved-lick bg-sky-500 hover:bg-sky-400 text-white font-bold p-2 w-10 h-10 rounded-lg leading-none" data-index="${index}">▶</button>
-                            <button class="delete-saved-lick bg-rose-600 hover:bg-rose-500 text-white font-bold p-2 w-10 h-10 rounded-lg leading-none" data-index="${index}">&times;</button>
-                        </div>
-                    `;
-                    savedLicksContainer.appendChild(lickEl);
-                });
-
-                savedLicksContainer.querySelectorAll('.play-saved-lick').forEach(btn => {
-                    btn.onclick = () => {
-                        const index = parseInt(btn.dataset.index);
-                        const lick = getSavedLicks()[index];
-                        if (lick) {
-                            playAnimatedScale(lick.notes, pianoContainerLick, 'highlighted', 0.22);
-                        }
-                    };
-                });
-
-                savedLicksContainer.querySelectorAll('.delete-saved-lick').forEach(btn => {
-                    btn.onclick = () => {
-                        const index = parseInt(btn.dataset.index);
-                        let licks = getSavedLicks();
-                        licks.splice(index, 1); 
-                        localStorage.setItem(LICK_STORAGE_KEY, JSON.stringify(licks));
-                        renderSavedLicks(); 
-                    };
-                });
-            }
+            const v = calculateVectors(cb, ob, aim);
+            const pathD = getPathData();
+            const sysColor = isValid ? "#ffffff" : "#ef4444";
             
-            function createSummaryButton(container, text, notes, bassNote = null) {
-                const button = document.createElement('button');
-                button.className = 'sub-button';
-                button.innerHTML = text;
-                button.onclick = () => {
-                    highlightKeys(pianoContainerSummary, notes, bassNote);
-                    playChord(notes, 1.5);
-                };
-                container.appendChild(button);
-            }
+            let cutName = "Manual";
+            if (Math.abs(v.deg - 0) < 5) cutName = "Llena (Full)";
+            else if (Math.abs(v.deg - 15) < 5) cutName = "3/4 Bola";
+            else if (Math.abs(v.deg - 30) < 5) cutName = "1/2 Bola";
+            else if (Math.abs(v.deg - 45) < 5) cutName = "1/4 Bola";
+            else if (Math.abs(v.deg - 60) < 5) cutName = "Fina";
+            else if (v.deg > 75) cutName = "Roce";
 
-            function getChordNotes(root, intervals) {
-                return intervals.map(i => transpose(root, i));
-            }
+            const offsetPixels = 60 * Math.sin(v.rad);
 
-            function updateSummaryUI() {
-                const tonicName = keySelectSummary.value;
-                const rootNote = SCALE_KEY_ROOT_NOTES[tonicName]; // C3
-                
-                summaryColII.innerHTML = '<h3 class="text-xl font-semibold text-center mb-4 border-b border-zinc-700 pb-2">Acorde II</h3>';
-                summaryColV.innerHTML = '<h3 class="text-xl font-semibold text-center mb-4 border-b border-zinc-700 pb-2">Acorde V</h3>';
-                summaryColI.innerHTML = '<h3 class="text-xl font-semibold text-center mb-4 border-b border-zinc-700 pb-2">Acorde I</h3>';
-                summaryColEquiv.innerHTML = '';
-                
-                const k=transpose(rootNote,0);
-                const iiR=transpose(k,2); const VR=transpose(k,7); const IR=k; 
-                const adjOct=(n)=>{if(!n)return 'C3';let i=ALL_NOTES.indexOf(n);if(i>=ALL_NOTES.indexOf('C4'))return transpose(n,-12);if(i<ALL_NOTES.indexOf('F2'))return transpose(n,12);return n;}; 
-                const iiB=transpose(iiR,-12); const VB=transpose(VR,-12); const IB=transpose(IR,-12);
-                const iiN=getNoteName(iiR); const VN=getNoteName(VR); const IN=getNoteName(IR); 
-                const iiB3N=transpose(iiR,3); const iiB3Nm=getNoteName(iiB3N); 
-                const iiB7N=transpose(iiR,10); const iiB7Nm=getNoteName(iiB7N); 
-                const V5N=transpose(VR,7); const V5Nm=getNoteName(V5N); 
-                const VB7N=transpose(VR,10); const VB7Nm=getNoteName(VB7N); 
-                const VB2N=transpose(VR,1); const VB2Nm=getNoteName(VB2N); 
-                const I5N=transpose(IR,7); const I5Nm=getNoteName(I5N);
-                const VdimR = transpose(VR, -1); const VdimNm = getNoteName(VdimR);
-                const sortN=(a)=>a.sort((x,y)=>ALL_NOTES.indexOf(x)-ALL_NOTES.indexOf(y));
-                
-                const std_ii=sortN([adjOct(iiR),adjOct(transpose(iiR,3)),adjOct(transpose(iiR,7)),adjOct(transpose(iiR,10))]);
-                const std_V=sortN([adjOct(VR),adjOct(transpose(VR,4)),adjOct(transpose(VR,7)),adjOct(transpose(VR,10))]);
-                const std_I=sortN([adjOct(IR),adjOct(transpose(IR,4)),adjOct(transpose(IR,7)),adjOct(transpose(IR,11))]);
-                const c1=sortN([adjOct(iiB3N),adjOct(transpose(iiB3N,4)),adjOct(transpose(iiB3N,7)),adjOct(transpose(iiB3N,9))]);
-                const c2=sortN([adjOct(iiB7N),adjOct(transpose(iiB7N,4)),adjOct(transpose(iiB7N,7)),adjOct(transpose(iiB7N,9))]);
-                const c3=sortN([adjOct(V5N),adjOct(transpose(V5N,3)),adjOct(transpose(V5N,7)),adjOct(transpose(V5N,9))]);
-                const c4=sortN([adjOct(VB7N),adjOct(transpose(VB7N,4)),adjOct(transpose(VB7N,7)),adjOct(transpose(VB7N,9))]);
-                const c5=sortN([adjOct(VB7N),adjOct(transpose(VB7N,3)),adjOct(transpose(VB7N,7)),adjOct(transpose(VB7N,9))]);
-                const c6=sortN([adjOct(VB2N),adjOct(transpose(VB2N,3)),adjOct(transpose(VB2N,7)),adjOct(transpose(VB2N,9))]);
-                const c7=sortN([adjOct(IR),adjOct(transpose(IR,4)),adjOct(transpose(IR,7)),adjOct(transpose(IR,9))]);
-                const c8=sortN([adjOct(I5N),adjOct(transpose(I5N,4)),adjOct(transpose(I5N,7)),adjOct(transpose(I5N,9))]);
-                const v_dim=sortN([adjOct(VdimR), adjOct(transpose(VdimR,3)), adjOct(transpose(VdimR,6)), adjOct(transpose(VdimR,9))]);
-                
-                createSummaryButton(summaryColII, `<strong>${iiN}m7</strong> <span>(Acorde Base)</span>`, [...std_ii, iiB], iiB);
-                createSummaryButton(summaryColII, `<strong>${iiB3Nm}6</strong> <span>(Relativo Maj6)</span>`, [...c1, iiB], iiB);
-                createSummaryButton(summaryColII, `<strong>${iiB7Nm}6</strong> <span>(Maj6 en b7)</span>`, [...c2, iiB], iiB);
+            return (
+                <div className="flex flex-col gap-4 animate-fade-in pb-6 w-full" ref={containerRef} style={{position:'relative'}}>
+                    {/* PANEL SUPERIOR */}
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative">
+                        <div className="flex justify-between items-center mb-3">
+                            <div>
+                                <span className={`text-[10px] font-bold uppercase tracking-widest ${isValid?'text-slate-400':'text-red-500'}`}>{isValid ? "Ángulo de Corte" : "Tiro Imposible"}</span>
+                                <div className={`text-4xl font-mono font-bold ${isValid?'text-emerald-500':'text-red-500'}`}>{displayAngle.toFixed(0)}°</div>
+                            </div>
+                            <div className="flex gap-1">
+                                {presets.map(deg => (
+                                    <button key={deg} onClick={()=>applyPreset(deg)} className={`w-9 h-9 rounded flex flex-col items-center justify-center border transition-all ${fixedAngle===deg?'bg-emerald-600 text-white border-emerald-500 scale-105':'bg-slate-50 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}>
+                                        <span className="text-[10px] font-bold">{deg}°</span>
+                                    </button>
+                                ))}
+                                <button onClick={()=>applyPreset(fixedAngle||30, true)} className="w-9 h-9 rounded flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-indigo-500"><Icons.Flip /></button>
+                                <button onClick={()=>setFixedAngle(null)} className={`w-9 h-9 rounded flex items-center justify-center ${fixedAngle===null?'bg-indigo-600 text-white':'bg-slate-50 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700'}`}><Icons.Unlock /></button>
+                            </div>
+                        </div>
+                        <div className="absolute top-4 right-4">
+                             <button onClick={()=>setShowScenarios(!showScenarios)} className="flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-xs font-bold hover:bg-indigo-200 transition"><Icons.Folder /> Cargar Tiro</button>
+                        </div>
+                        {showScenarios && (
+                            <div className="absolute top-12 right-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-2 w-56 max-h-64 overflow-y-auto">
+                                {scenarios.map((s,i) => <button key={i} onClick={()=>loadScenario(s)} className="w-full text-left text-xs p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-200 block border-b border-slate-100 dark:border-slate-700 last:border-0"><div className="font-bold">{s.name}</div><div className="text-[9px] opacity-70">{s.desc}</div></button>)}
+                            </div>
+                        )}
+                    </div>
 
-                createSummaryButton(summaryColV, `<strong>${VN}7</strong> <span>(Acorde Base)</span>`, [...std_V, VB], VB);
-                createSummaryButton(summaryColV, `<strong>${V5Nm}m6</strong> <span>(m6 en 5ta -> ${VN}9)</span>`, [...c3, VB], VB);
-                createSummaryButton(summaryColV, `<strong>${VB7Nm}6</strong> <span>(Maj6 en b7 -> ${VN}9sus)</span>`, [...c4, VB], VB);
-                createSummaryButton(summaryColV, `<strong>${VB7Nm}m6</strong> <span>(m6 en b7 -> ${VN}7susb9)</span>`, [...c5, VB], VB);
-                createSummaryButton(summaryColV, `<strong>${VB2Nm}m6</strong> <span>(m6 en b2 -> ${VN}7alt)</span>`, [...c6, VB], VB);
-                createSummaryButton(summaryColV, `<strong>${VdimNm}dim7</strong> <span>(Disminuido Relativo)</span>`, [...v_dim, VB], VB);
-                
-                createSummaryButton(summaryColI, `<strong>${IN}Maj7</strong> <span>(Acorde Base)</span>`, [...std_I, IB], IB);
-                createSummaryButton(summaryColI, `<strong>${IN}6</strong> <span>(Tónica Harris)</span>`, [...c7, IB], IB);
-                createSummaryButton(summaryColI, `<strong>${I5Nm}6</strong> <span>(Maj6 en 5ta -> ${IN}Maj9)</span>`, [...c8, IB], IB);
+                    <div className="relative">
+                        {/* LUPA MEJORADA */}
+                        <div className="absolute cursor-move touch-none z-[100]" style={{left:sightPos.x, top:sightPos.y}} onMouseDown={(e)=>startDrag(e,'sight')} onTouchStart={(e)=>startDrag(e,'sight')}>
+                            <div className="glass rounded-full w-28 h-28 shadow-2xl flex items-center justify-center overflow-hidden relative group">
+                                <div className="absolute top-1 right-2 text-slate-500/50"><Icons.Move /></div>
+                                {/* Roja con Guías */}
+                                <div className="absolute w-[60px] h-[60px] rounded-full bg-red-600 border-2 border-red-800 shadow-inner flex justify-center items-center">
+                                    <div className="w-[1px] h-full bg-white/40 absolute"></div> {/* Centro */}
+                                </div>
+                                {/* Blanca superpuesta */}
+                                <div className="absolute w-[60px] h-[60px] rounded-full border-2 border-white/90 bg-white/10" style={{transform:`translateX(${v.dir * -offsetPixels}px)`}}>
+                                    <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                                </div>
+                                <div className="absolute bottom-2 w-full text-center flex flex-col items-center">
+                                    <div className="text-[8px] text-slate-800 dark:text-slate-200 uppercase font-bold tracking-wider px-1 rounded mt-0.5 backdrop-blur-sm">{cutName}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                const m7_rel_maj6_root = transpose(rootNote, 9); 
-                const m7_rel_maj6_notes = getChordNotes(m7_rel_maj6_root, [0, 3, 7, 10]); 
-                const maj6_rel_m7_notes = getChordNotes(rootNote, [0, 4, 7, 9]); 
-                createSummaryButton(summaryColEquiv, `<strong>${getNoteName(rootNote)}6 = ${getNoteName(m7_rel_maj6_root)}m7</strong> <span>(Maj6 / m7 Relativo)</span>`, maj6_rel_m7_notes);
-                
-                const m6_root = transpose(rootNote, 2); 
-                const m6_notes = getChordNotes(m6_root, [0, 3, 7, 9]); 
-                const m7b5_root = transpose(m6_root, 9); 
-                createSummaryButton(summaryColEquiv, `<strong>${getNoteName(m6_root)}m6 = ${getNoteName(m7b5_root)}m7(b5)</strong> <span>(m6 / m7b5 Relativo)</span>`, m6_notes);
-                
-                highlightKeys(pianoContainerSummary);
-            }
+                        {/* MESA SVG CON BORDE DE MADERA */}
+                        <div className={`relative rounded-lg overflow-hidden transition-all duration-300 shadow-2xl ${isValid?'shadow-black/50':'shadow-red-500/50 ring-4 ring-red-500/30'}`}>
+                            {/* ViewBox calculado con bordes */}
+                            <svg ref={svgRef} viewBox={`-${BORDER} -${BORDER} ${TABLE_W+BORDER*2} ${TABLE_H+BORDER*2}`} className="w-full h-auto bg-stone-900 touch-none cursor-crosshair">
+                                <defs>
+                                    <marker id="arrow" orient="auto" markerWidth="3" markerHeight="3" refX="0.1" refY="1.5"><path d="M0,0 V3 L3,1.5 Z" fill={sysColor}/></marker>
+                                </defs>
+                                
+                                <rect x={-BORDER} y={-BORDER} width={TABLE_W+BORDER*2} height={TABLE_H+BORDER*2} rx="8" className="wood-texture" stroke="#2a1e10" strokeWidth="2"/>
+                                <rect x="0" y="0" width={TABLE_W} height={TABLE_H} rx="4" className="fill-felt dark:fill-feltDark shadow-felt"/>
+                                
+                                {[0,1,2,3,4,5].map(i=><circle key={i} cx={[{x:0,y:0},{x:TABLE_W/2,y:0},{x:TABLE_W,y:0},{x:0,y:TABLE_H},{x:TABLE_W/2,y:TABLE_H},{x:TABLE_W,y:TABLE_H}][i].x} cy={[{x:0,y:0},{x:TABLE_W/2,y:0},{x:TABLE_W,y:0},{x:0,y:TABLE_H},{x:TABLE_W/2,y:TABLE_H},{x:TABLE_W,y:TABLE_H}][i].y} r={18} fill="#0f0f0f"/>)}
+                                
+                                {[1,2,3, 5,6,7].map(i => <circle key={`d-top-${i}`} cx={TABLE_W * (i/4) - (i>3?TABLE_W:0)} cy={-BORDER/2} r={3} fill="#d4d4d8" opacity="0.8"/>)}
+                                
+                                <line x1={ob.x} y1={ob.y} x2={aim.x} y2={aim.y} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,4" opacity="0.5"/>
+                                
+                                <circle cx={v.gbX} cy={v.gbY} r={BALL_R} fill="none" stroke="white" strokeWidth="1" strokeDasharray="3,2" opacity="0.6"/>
+                                
+                                <line x1={cb.x} y1={cb.y} x2={v.gbX} y2={v.gbY} stroke={sysColor} strokeWidth="2" opacity="0.7"/>
+                                <path d={pathD} fill="none" stroke={sysColor} strokeWidth="3" markerEnd="url(#arrow)" opacity="0.9"/>
+                                
+                                <g transform={`translate(${ob.x},${ob.y})`} onMouseDown={(e)=>startDrag(e,'ob')} onTouchStart={(e)=>startDrag(e,'ob')} className="cursor-grab">
+                                    <circle r={40} fill="transparent"/>
+                                    <circle r={BALL_R} fill="#ef4444" stroke="black" strokeWidth="1"/>
+                                    <circle r={BALL_R-4} fill="none" stroke="white" strokeWidth="1" opacity="0.2" transform="rotate(-45)"/>
+                                </g>
+                                <g transform={`translate(${aim.x},${aim.y})`} onMouseDown={(e)=>startDrag(e,'aim')} onTouchStart={(e)=>startDrag(e,'aim')} className="cursor-pointer">
+                                    <circle r={25} fill="transparent"/>
+                                    <circle r={6} fill="none" stroke="white" strokeWidth="2" opacity="0.8"/>
+                                    <circle r={2} fill="#ef4444"/>
+                                </g>
+                                <g transform={`translate(${cb.x},${cb.y})`} onMouseDown={(e)=>startDrag(e,'cb')} onTouchStart={(e)=>startDrag(e,'cb')} className={`cursor-grab ${fixedAngle ? 'smooth-move' : ''}`}>
+                                    <circle r={40} fill="transparent"/>
+                                    <circle r={BALL_R} fill="white" stroke={isValid?"#d4d4d8":"#ef4444"} strokeWidth="1"/>
+                                    <circle r={4} fill="#e2e8f0"/>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
 
-            drawPiano(pianoContainer251); drawPiano(pianoContainerDiminished); drawPiano(pianoContainerImpro); drawPiano(pianoContainerOutlines); drawPiano(pianoContainerLick); drawPiano(pianoContainerSummary);
-            updateApp251(); updateAppDiminished(); updateImproControls(); updateOutlineDisplay(); 
-            updateDimScaleButtonText();
-            updateLickV7Display();
-            renderSavedLicks();
-            updateSummaryUI(); 
-            keySelectSummary.onchange = updateSummaryUI;
-        });
+                    <div className="grid grid-cols-2 gap-4 h-32">
+                        <div className="bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase mb-2">Efecto</span>
+                            <div className="relative w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full border-4 border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
+                                <button onClick={()=>setSpin('top')} className={`absolute top-1 w-6 h-6 rounded-full transition-all ${spin==='top'?'bg-red-500 ring-2 ring-red-300 scale-110':'bg-slate-300/50 hover:bg-slate-400/50'}`}></button>
+                                <button onClick={()=>setSpin('center')} className={`absolute w-6 h-6 rounded-full transition-all ${spin==='center'?'bg-red-500 ring-2 ring-red-300 scale-110':'bg-slate-300/50 hover:bg-slate-400/50'}`}></button>
+                                <button onClick={()=>setSpin('bottom')} className={`absolute bottom-1 w-6 h-6 rounded-full transition-all ${spin==='bottom'?'bg-red-500 ring-2 ring-red-300 scale-110':'bg-slate-300/50 hover:bg-slate-400/50'}`}></button>
+                            </div>
+                            <span className="text-[9px] font-bold mt-1 text-emerald-600 dark:text-emerald-400 uppercase">{spin==='top'?'Corrido':spin==='center'?'Stun (Seco)':'Retroceso'}</span>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-4"><span>FUERZA</span><span className="text-indigo-500">{speed}%</span></div>
+                            <div className="h-full flex items-center"><input type="range" min="10" max="100" value={speed} onChange={(e)=>setSpeed(Number(e.target.value))} className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg accent-indigo-500 cursor-pointer"/></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [dark, setDark] = useState(true);
+            const [tab, setTab] = useState('stance');
+            const drillLoader = useRef(null);
+            
+            useEffect(() => { document.documentElement.className = dark ? 'dark' : ''; }, [dark]);
+
+            // Safe Access: Evita que crashee si no encuentra datos
+            const activeData = getCourseData(drillLoader).find(c => c.id === tab) || getCourseData(drillLoader)[0];
+            
+            const loadDrill = (setup) => { 
+                if (tab !== 'physics') setTab('physics'); 
+                setTimeout(() => { if (drillLoader.current) drillLoader.current(setup); }, 100); 
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col font-sans pb-12 bg-slate-100 dark:bg-slate-950">
+                    <header className="sticky top-0 z-40 bg-emerald-950 text-white px-4 py-3 shadow-lg flex justify-between items-center border-b border-emerald-800">
+                        <div className="flex items-center gap-3"><div className="bg-emerald-800 p-2 rounded-full text-emerald-300 shadow-inner ring-1 ring-emerald-700"><Icons.Table /></div><div><h1 className="text-lg font-bold leading-none tracking-tight">Tiro Maestro V36.1</h1><span className="text-[9px] text-emerald-400 uppercase font-bold tracking-widest bg-emerald-900/50 px-1 rounded">Pro Fixed</span></div></div>
+                        <button onClick={()=>setDark(!dark)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition">{dark ? <Icons.Sun /> : <Icons.Moon />}</button>
+                    </header>
+                    <main className="flex-1 p-4 w-full max-w-2xl mx-auto flex flex-col gap-4">
+                        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">{getCourseData().map(c => <button key={c.id} onClick={()=>setTab(c.id)} className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition border ${tab===c.id ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-900/20' : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'}`}>{c.icon} {c.title}</button>)}</div>
+                        <div className="animate-fade-in flex flex-col gap-4">
+                            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+                                <h2 className="text-xl font-bold mb-3 flex items-center gap-2 text-slate-800 dark:text-white">{activeData.title}</h2>
+                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-l-4 border-emerald-500 pl-4 mb-5">{activeData.content.summary}</p>
+                                
+                                {activeData.content.details && <div className="grid gap-3 mb-4">{activeData.content.details.map((d,i) => <div key={i} className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg"><h4 className="text-xs font-bold text-indigo-500 uppercase mb-1">{d.title}</h4><p className="text-sm text-slate-700 dark:text-slate-300">{d.text}</p></div>)}</div>}
+
+                                {activeData.content.drills && activeData.content.drills.length > 0 && <div className="grid gap-3"><div className="text-xs font-bold text-slate-400 uppercase mt-2">Ejercicios Prácticos</div>{activeData.content.drills.map((drill, idx) => <div key={idx} className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 p-4 rounded-xl"><div className="flex justify-between items-start mb-2"><div className="flex items-center gap-2"><span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${drill.type === 'off' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{drill.type === 'off' ? <span className="flex items-center gap-1"><Icons.Home /> Casa</span> : <span className="flex items-center gap-1"><Icons.Table /> Mesa</span>}</span><h4 className="font-bold text-indigo-900 dark:text-indigo-200 text-sm">{drill.title}</h4></div>{drill.setup && <button onClick={()=>loadDrill(drill.setup)} className="text-[10px] font-bold bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1 hover:bg-indigo-700 transition"><Icons.Play /> Cargar</button>}</div><p className="text-sm text-slate-600 dark:text-slate-400">{drill.desc}</p></div>)}</div>}
+                            </div>
+                            {activeData.isSimulator && <SmartSimulator onLoadDrill={drillLoader} />}
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
