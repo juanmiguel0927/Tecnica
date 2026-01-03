@@ -122,6 +122,7 @@
 
         // --- ICONOS ---
         const Icons = {
+            List: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>,
             Table: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="12" x="3" y="10" rx="2"/><circle cx="12" cy="16" r="2"/></svg>,
             Stance: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
             Grip: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>,
@@ -157,23 +158,17 @@
             return data ? JSON.parse(data) : null;
         };
 
-        // --- COMPONENTES AUXILIARES ---
+        // --- COMPONENTS ---
         const StopwatchTool = () => {
             const [time, setTime] = useState(5);
             const [active, setActive] = useState(false);
-            
             useEffect(() => {
                 let interval = null;
-                if (active && time > 0) {
-                    interval = setInterval(() => setTime(t => t - 1), 1000);
-                } else if (time === 0) {
-                    setActive(false);
-                }
+                if (active && time > 0) interval = setInterval(() => setTime(t => t - 1), 1000);
+                else if (time === 0) setActive(false);
                 return () => clearInterval(interval);
             }, [active, time]);
-
             const start = () => { setTime(5); setActive(true); };
-
             return (
                 <div className="flex items-center gap-2 mt-2">
                     <button onClick={start} disabled={active} className={`text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1 transition ${active ? 'bg-red-100 text-red-600' : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'}`}>
@@ -183,525 +178,27 @@
             );
         };
 
-        const BilliardBallBtn = ({ color, number, label, onClick, subIcon, size = 'large' }) => {
-            const sizeClass = size === 'large' ? 'w-24 h-24' : 'w-16 h-16';
-            const numSize = size === 'large' ? 'text-2xl' : 'text-lg';
-            return (
-                <div className="flex flex-col items-center gap-2 group cursor-pointer" onClick={onClick}>
-                    <div className={`pool-ball ${sizeClass} shadow-ball animate-roll-in`} style={{backgroundColor: color}}>
-                        <div className="ball-number">{subIcon ? subIcon : <span className={numSize}>{number}</span>}</div>
-                    </div>
-                    <span className="text-[10px] font-bold text-white uppercase tracking-wider bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm group-hover:bg-emerald-600 transition">{label}</span>
-                </div>
-            );
-        };
-
-        const UserLogin = ({ onLogin, users, setUsers }) => {
-            const [newUser, setNewUser] = useState('');
-            const [view, setView] = useState('menu');
-            const fileInputRef = useRef(null);
-            const ballColors = ['#facc15', '#1d4ed8', '#ef4444', '#7e22ce', '#f97316', '#15803d', '#881337', '#000000'];
-
-            const handleAddUser = () => {
-                if (newUser.trim()) {
-                    const newUserData = { name: newUser.trim(), id: Date.now(), progress: {} }; // Init progress
-                    const updated = [...users, newUserData];
-                    setUsers(updated);
-                    saveToLocal('tm_users', updated);
-                    setNewUser('');
-                    setView('list');
-                }
-            };
-            const handleDeleteUser = (id, e) => {
-                e.stopPropagation();
-                if (window.confirm("¿Borrar usuario?")) {
-                    const updated = users.filter(u => u.id !== id);
-                    setUsers(updated);
-                    saveToLocal('tm_users', updated);
-                }
-            };
-            const handleGuest = () => onLogin({ name: "Invitado", isGuest: true, progress: {} });
-            
-            const handleImportClick = () => fileInputRef.current.click();
-            const handleImportFile = (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try { 
-                        const imported = JSON.parse(e.target.result); 
-                        setUsers(imported); 
-                        saveToLocal('tm_users', imported);
-                        alert("Importado!"); 
-                    } catch (error) { alert("Error"); }
-                };
-                reader.readAsText(file);
-            };
-            const handleExport = () => {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(users));
-                const node = document.createElement('a');
-                node.setAttribute("href", dataStr);
-                node.setAttribute("download", "tiro_maestro_users.json");
-                document.body.appendChild(node); node.click(); node.remove();
-            };
-
-            return (
-                <div className="min-h-screen flex items-center justify-center wood-texture p-4 relative overflow-hidden">
-                    {/* The Felt Surface - Changes Color */}
-                    <div className="absolute inset-4 sm:inset-8 rounded-3xl shadow-felt border-8 border-[#2a1e10]/50 animate-felt-cycle felt-bg"></div>
-                    
-                    {/* Diamantes en el marco */}
-                    <div className="absolute top-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2 z-0"></div>
-                    <div className="absolute bottom-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2 z-0"></div>
-
-                    <div className="z-10 w-full max-w-2xl flex flex-col items-center">
-                        {/* Logo / Título */}
-                        <div className="bg-black/40 backdrop-blur-md px-8 py-4 rounded-full border border-white/10 mb-12 shadow-2xl flex flex-col items-center">
-                            <h1 className="text-4xl font-black text-white tracking-tighter drop-shadow-lg">TIRO MAESTRO</h1>
-                            <span className="text-emerald-400 text-xs font-bold uppercase tracking-[0.3em]">Técnica</span>
-                        </div>
-
-                        {view === 'menu' && (
-                            <div className="flex flex-col items-center w-full">
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center mb-8">
-                                    {/* Opción: Jugar (Lista de Usuarios) */}
-                                    <BilliardBallBtn color="#facc15" number="1" label="Cargar" onClick={() => setView('list')} />
-                                    
-                                    {/* Opción: Crear */}
-                                    <BilliardBallBtn color="#1d4ed8" subIcon={<Icons.Plus />} label="Crear" onClick={() => setView('add')} />
-                                    
-                                    {/* Opción: Invitado (Bola 8) */}
-                                    <BilliardBallBtn color="#000000" number="8" label="Invitado" onClick={() => onLogin({ name: "Invitado", isGuest: true })} />
-                                    
-                                    {/* Herramientas (Import/Export) */}
-                                    <div className="flex flex-col gap-4">
-                                        <div onClick={handleImportClick} className="cursor-pointer flex flex-col items-center group">
-                                            <div className="w-12 h-12 rounded-full bg-white border-4 border-red-600 shadow-ball flex items-center justify-center transform group-hover:scale-110 transition"><Icons.Upload /></div>
-                                            <span className="text-[9px] text-white font-bold bg-black/40 px-2 rounded mt-1">Import</span>
-                                        </div>
-                                        <div onClick={handleExport} className="cursor-pointer flex flex-col items-center group">
-                                            <div className="w-12 h-12 rounded-full bg-white border-4 border-purple-600 shadow-ball flex items-center justify-center transform group-hover:scale-110 transition"><Icons.Download /></div>
-                                            <span className="text-[9px] text-white font-bold bg-black/40 px-2 rounded mt-1">Export</span>
-                                        </div>
-                                        <input type="file" ref={fileInputRef} onChange={handleImportFile} className="hidden" accept=".json" />
-                                    </div>
-                                </div>
-
-                                {/* NUEVAS FRANJAS DE ENLACES */}
-                                <div className="w-full max-w-lg flex flex-col gap-3">
-                                    <a href="https://juanmiguel0927.github.io/Pool/" className="w-full bg-emerald-800/90 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg border-2 border-emerald-400/30 flex items-center justify-between shadow-lg transition group backdrop-blur-sm">
-                                        <span className="uppercase tracking-widest text-xs">Plan de Entrenamiento</span>
-                                        <div className="bg-white/10 p-1 rounded-full group-hover:translate-x-1 transition-transform">
-                                            <Icons.ArrowRight />
-                                        </div>
-                                    </a>
-                                    <a href="https://juanmiguel0927.github.io/ExamenPool/" className="w-full bg-indigo-900/90 hover:bg-indigo-800 text-white font-bold py-3 px-4 rounded-lg border-2 border-indigo-400/30 flex items-center justify-between shadow-lg transition group backdrop-blur-sm">
-                                        <span className="uppercase tracking-widest text-xs">Examen Pool</span>
-                                        <div className="bg-white/10 p-1 rounded-full group-hover:translate-x-1 transition-transform">
-                                            <Icons.ArrowRight />
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'list' && (
-                            <div className="w-full max-w-lg">
-                                <div className="flex flex-wrap gap-6 justify-center p-4">
-                                    {users.map((u, i) => (
-                                        <div key={u.id || i} className="relative group">
-                                            <BilliardBallBtn 
-                                                color={ballColors[i % 7]} // Ciclo de colores sólidas (1-7)
-                                                number={u.name.substring(0,2).toUpperCase()} 
-                                                label={u.name} 
-                                                onClick={() => onLogin(u)} 
-                                            />
-                                            <button 
-                                                onClick={(e) => handleDeleteUser(u.id, e)}
-                                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition shadow-md border border-white"
-                                            >
-                                                <Icons.Trash />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    {users.length === 0 && <p className="text-white font-bold">No hay jugadores.</p>}
-                                </div>
-                                <button onClick={() => setView('menu')} className="mx-auto mt-8 block text-white/70 hover:text-white font-bold uppercase text-xs tracking-widest border-b border-transparent hover:border-white transition">← Volver al Menú</button>
-                            </div>
-                        )}
-
-                        {view === 'add' && (
-                            <div className="bg-black/50 backdrop-blur p-6 rounded-2xl border border-white/10 w-full max-w-sm animate-fade-in">
-                                <label className="block text-white text-xs font-bold uppercase mb-2">Nombre del Jugador</label>
-                                <input 
-                                    type="text" 
-                                    value={newUser} 
-                                    onChange={(e) => setNewUser(e.target.value)} 
-                                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-emerald-500 mb-4"
-                                    placeholder="Ej: Efren Reyes"
-                                    autoFocus
-                                />
-                                <div className="flex gap-2">
-                                    <button onClick={() => setView('menu')} className="flex-1 py-3 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20 transition">Cancelar</button>
-                                    <button onClick={handleAddUser} className="flex-1 py-3 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition shadow-lg">Crear</button>
-                                </div>
-                            </div>
-                        )}
-                        
-                        <div className="absolute bottom-8 text-center w-full">
-                             <p className="text-[10px] text-white/40 font-medium">Desarrollado por <span className="text-emerald-400">Juan Miguel Rios Redondo</span></p>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const EvaluationCard = ({ data, onComplete }) => {
-            const [selected, setSelected] = useState(null);
-            const [showFeedback, setShowFeedback] = useState(false);
-            const handleSelect = (idx) => { 
-                if (showFeedback) return; 
-                setSelected(idx); 
-                setShowFeedback(true);
-                if (data.options[idx].correct && onComplete) onComplete();
-            };
-            const reset = () => { setSelected(null); setShowFeedback(false); };
-            useEffect(reset, [data]);
-            if (!data) return null;
-            return (
-                <div className="mt-6 bg-slate-100 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center gap-2 mb-3"><span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 p-1 rounded"><Icons.Check /></span><h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Evaluación Rápida</h3></div>
-                    <p className="text-sm font-medium mb-3 text-slate-700 dark:text-slate-300">{data.question}</p>
-                    <div className="space-y-2">
-                        {data.options.map((opt, idx) => {
-                            let itemClass = "w-full text-left p-3 rounded-lg text-xs font-bold transition flex justify-between items-center ";
-                            if (showFeedback) {
-                                if (idx === selected) itemClass += opt.correct ? "bg-emerald-100 text-emerald-800 border-2 border-emerald-500" : "bg-red-100 text-red-800 border-2 border-red-500";
-                                else if (opt.correct) itemClass += "bg-emerald-50 text-emerald-600 border border-emerald-200 opacity-70"; 
-                                else itemClass += "bg-white dark:bg-slate-800 text-slate-400 opacity-50";
-                            } else itemClass += "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700";
-                            return (<button key={idx} onClick={() => handleSelect(idx)} className={itemClass} disabled={showFeedback}>{opt.text}{showFeedback && idx === selected && (opt.correct ? <Icons.Check /> : <Icons.X />)}</button>);
-                        })}
-                    </div>
-                    {showFeedback && (<div className={`mt-3 text-xs p-2 rounded ${data.options[selected].correct ? 'text-emerald-700 bg-emerald-50' : 'text-red-700 bg-red-50'}`}><strong>Retroalimentación: </strong> {data.options[selected].feedback}{!data.options[selected].correct && <button onClick={reset} className="block mt-2 text-indigo-600 underline">Intentar de nuevo</button>}</div>)}
-                </div>
-            );
-        };
-
-        const QuizMode = ({ data }) => {
-            const [currentQ, setCurrentQ] = useState(0);
-            const [score, setScore] = useState(0);
-            const [finished, setFinished] = useState(false);
-            const [selected, setSelected] = useState(null);
-            const [showFeedback, setShowFeedback] = useState(false);
-
-            const handleSelect = (idx) => {
-                if (showFeedback) return;
-                setSelected(idx); setShowFeedback(true);
-                if (data.questions[currentQ].options[idx].correct) setScore(score + 1);
-            };
-
-            const handleNext = () => {
-                if (currentQ < data.questions.length - 1) { setCurrentQ(currentQ + 1); setSelected(null); setShowFeedback(false); } 
-                else { setFinished(true); }
-            };
-
-            const resetQuiz = () => { setCurrentQ(0); setScore(0); setFinished(false); setSelected(null); setShowFeedback(false); };
-
-            if (finished) {
-                const percentage = (score / data.questions.length) * 100;
-                let title = percentage >= 100 ? "Gran Maestro" : percentage >= 80 ? "Profesional" : "Aficionado";
-                return (
-                    <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg text-center animate-fade-in border border-slate-200 dark:border-slate-800">
-                        <div className="mb-4 flex justify-center text-emerald-500"><Icons.Check /></div>
-                        <h2 className="text-2xl font-bold mb-2 dark:text-white">Examen Finalizado</h2>
-                        <p className="text-slate-500 mb-6 text-sm">Tu resultado final:</p>
-                        <div className="text-5xl font-black text-indigo-600 dark:text-indigo-400 mb-2">{score}/{data.questions.length}</div>
-                        <div className="inline-block bg-slate-100 dark:bg-slate-800 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 mb-8">{title}</div>
-                        <button onClick={resetQuiz} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition">Intentar de nuevo</button>
-                    </div>
-                );
-            }
-
-            const q = data.questions[currentQ];
-            return (
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 animate-fade-in">
-                    <div className="flex justify-between items-center mb-4"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pregunta {currentQ + 1} de {data.questions.length}</span><span className="text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded">Puntos: {score}</span></div>
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 leading-snug">{q.question}</h3>
-                    <div className="space-y-3 mb-6">
-                        {q.options.map((opt, idx) => {
-                            let itemClass = "w-full text-left p-4 rounded-xl text-sm font-medium transition border-2 flex justify-between items-center ";
-                            if (showFeedback) {
-                                if (idx === selected) {
-                                    itemClass += opt.correct ? "bg-emerald-50 border-emerald-500 text-emerald-700" : "bg-red-50 border-red-500 text-red-700";
-                                } else if (opt.correct) {
-                                    itemClass += "bg-emerald-50 border-emerald-200 text-emerald-600 opacity-70";
-                                } else {
-                                    itemClass += "border-transparent bg-slate-50 dark:bg-slate-800 text-slate-400 opacity-50";
-                                }
-                            } else {
-                                itemClass += "bg-slate-50 dark:bg-slate-800 border-transparent hover:border-indigo-200 text-slate-700 dark:text-slate-200";
-                            }
-
-                            return (
-                                <button key={idx} onClick={() => handleSelect(idx)} className={itemClass} disabled={showFeedback}>
-                                    {opt.text}
-                                    {showFeedback && idx === selected && (opt.correct ? <Icons.Check /> : <Icons.X />)}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {showFeedback && (
-                        <div className="animate-fade-in">
-                            <div className={`text-sm p-4 rounded-xl mb-4 ${q.options[selected].correct ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300' : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300'}`}>
-                                <p className="font-bold mb-1">{q.options[selected].correct ? '¡Correcto!' : 'Incorrecto'}</p>
-                                <p className="opacity-90">{q.options[selected].feedback}</p>
-                            </div>
-                            <button onClick={handleNext} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition flex items-center justify-center gap-2">
-                                {currentQ < data.questions.length - 1 ? 'Siguiente Pregunta' : 'Ver Resultados'} <Icons.Play />
-                            </button>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-
-        // --- COMPONENTE ENTRENADOR V7 ---
-        const TrainerV7 = () => {
-            const cueRef = useRef(null);
-            const mainTextRef = useRef(null);
-            const subTextRef = useRef(null);
-            const audioCtx = useRef(null);
-            const timerID = useRef(null);
-            const nextNoteTime = useRef(0.0);
-            
-            const [isRunning, setIsRunning] = useState(false);
-            const [bpm, setBpm] = useState(60);
-            const [force, setForce] = useState("120|0.20"); 
-            const [m3Beats, setM3Beats] = useState(4);
-            const [useM1, setUseM1] = useState(true);
-            const [useM2, setUseM2] = useState(true);
-            const [uiState, setUiState] = useState({ m: 1, b: 0 });
-
-            // Configurantes de física
-            const P_GAP = 8;
-            const P_FEATHER_DIST = 50;
-            const P_THROUGH_DIST = 160;
-
-            const playSound = (type) => {
-                if (!audioCtx.current) return;
-                const ctx = audioCtx.current;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                const now = ctx.currentTime;
-
-                if (type === 'tick') {
-                    osc.frequency.value = 800; osc.type = 'square';
-                    gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.05);
-                } else if (type === 'measure-start') {
-                    osc.frequency.value = 1200; osc.type = 'square';
-                    gain.gain.setValueAtTime(0.12, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.08);
-                } else if (type === 'hit') {
-                    osc.frequency.value = 150; osc.type = 'sawtooth';
-                    gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.15);
-                } 
-                osc.start(now); osc.stop(now+0.2);
-            };
-
-            const setText = (main, sub) => {
-                if(mainTextRef.current) mainTextRef.current.textContent = main;
-                if(subTextRef.current) subTextRef.current.textContent = sub;
-            };
-
-            const setCue = (x, duration, ease = 'linear') => {
-                if(cueRef.current) {
-                    cueRef.current.style.transition = `transform ${duration}s ${ease}`;
-                    cueRef.current.style.transform = `translateX(${x}px)`;
-                }
-            };
-
-            const runVisuals = (m, b) => {
-                setUiState({ m, b });
-                const secPerBeat = 60/bpm;
-
-                if (m === 1) {
-                    setCue(-P_GAP, 0);
-                    const texts = ["1. VISUALIZA", "RESPIRA", "ENFOCA", "LISTO"];
-                    const subs = ["Mente en silencio.", "Inhala profundo.", "Ojos en la bola.", "Prepárate."];
-                    if(b <= 4) setText(texts[b-1], subs[b-1]);
-                }
-                else if (m === 2) {
-                    setCue(-P_GAP, 0);
-                    const texts = ["PASO DERECHO", "PASO IZQUIERDO", "AGACHADO", "PUENTE"];
-                    const subs = ["Pie en línea.", "Abre base.", "Barbilla al taco.", "Agarre suave."];
-                    if(b <= 4) setText(texts[b-1], subs[b-1]);
-                }
-                else if (m === 3) {
-                    const isBack = (b % 2 !== 0);
-                    if (isBack) {
-                        setText("LIMADO ATRÁS", "Suave, sin apretar.");
-                        setCue(-(P_GAP + P_FEATHER_DIST), secPerBeat, 'ease-in-out');
-                    } else {
-                        setText("LIMADO ADELANTE", "Acércate SIN tocar.");
-                        setCue(-P_GAP, secPerBeat, 'ease-in-out');
-                    }
-                    if (b === m3Beats) setText("LISTO PARA TIRAR", "Última pausa.");
-                }
-                else if (m === 4) {
-                    const [dist, time] = force.split('|').map(Number);
-                    if(b===1) {
-                        setText("4. BACKSWING FINAL", "Atrás... Distancia.");
-                        setCue(-(P_GAP + dist), secPerBeat, 'ease-out');
-                    } else if(b===2) {
-                        setText("¡¡ PAUSA !!", "Quieto.");
-                    } else if(b===3) {
-                        setText("¡¡ GOLPE !!", "Suelta el brazo.");
-                        setCue(P_THROUGH_DIST, time, 'cubic-bezier(0.22, 0.61, 0.36, 1)'); 
-                    } else if(b===4) {
-                        setText("FREEZE", "Quédate abajo.");
-                    }
-                }
-            };
-
-            const advanceMeasure = (currentM) => {
-                let nextM = currentM + 1;
-                if (nextM > 4) nextM = 1;
-                if (nextM === 1 && !useM1) nextM = 2;
-                if (nextM === 2 && !useM2) nextM = 3;
-                return nextM;
-            };
-
-            const stateRef = useRef({ m: 1, b: 0 });
-
-            const scheduleNote = (m, b, time) => {
-                const delay = Math.max(0, (time - audioCtx.current.currentTime) * 1000);
-                setTimeout(() => {
-                    if (!isRunning) return;
-                    runVisuals(m, b);
-                    if (m === 4 && b === 3) playSound('hit');
-                    else if (b === 1) playSound('measure-start'); 
-                    else playSound('tick');
-                }, delay);
-            };
-
-            const nextNote = () => {
-                const secondsPerBeat = 60.0 / bpm;
-                nextNoteTime.current += secondsPerBeat;
-                stateRef.current.b++;
-                
-                let beatsInMeasure = 4;
-                if (stateRef.current.m === 3) beatsInMeasure = m3Beats;
-
-                if (stateRef.current.b > beatsInMeasure) {
-                    stateRef.current.b = 1;
-                    stateRef.current.m = advanceMeasure(stateRef.current.m);
-                }
-            };
-
-            const scheduler = () => {
-                if (!isRunning) return;
-                while (nextNoteTime.current < audioCtx.current.currentTime + 0.1) {
-                    scheduleNote(stateRef.current.m, stateRef.current.b, nextNoteTime.current);
-                    nextNote();
-                }
-                timerID.current = requestAnimationFrame(scheduler);
-            };
-
-            useEffect(() => {
-                if (isRunning) {
-                    if (!audioCtx.current) audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
-                    if (audioCtx.current.state === 'suspended') audioCtx.current.resume();
-                    nextNoteTime.current = audioCtx.current.currentTime + 0.1;
-                    stateRef.current = { m: useM1 ? 1 : (useM2 ? 2 : 3), b: 0 };
-                    scheduler();
-                } else {
-                    cancelAnimationFrame(timerID.current);
-                }
-                return () => cancelAnimationFrame(timerID.current);
-            }, [isRunning]);
-
-            return (
-                <div className="flex flex-col items-center w-full max-w-3xl mx-auto p-2">
-                    <div className="text-center mb-4 h-16">
-                        <div ref={mainTextRef} className="text-2xl font-black text-yellow-400 drop-shadow-md tracking-wider">ENTRENADOR DE RITMO</div>
-                        <div ref={subTextRef} className="text-sm text-slate-400">Física de aceleración por distancia</div>
-                    </div>
-
-                    <div className="w-full flex justify-center mb-4 overflow-hidden">
-                        <div className="relative" style={{width: '700px', height: '280px', transform: 'scale(0.8)', transformOrigin: 'top center'}}> 
-                            <div className="v7-pool-border">
-                                <div className="v7-diamond" style={{left: '25%'}}></div><div className="v7-diamond" style={{left: '50%'}}></div><div className="v7-diamond" style={{left: '75%'}}></div>
-                                <div className="v7-felt">
-                                    <div className="v7-ball"></div>
-                                    <div ref={cueRef} className="v7-cue"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-1 w-full mb-6">
-                        <div onClick={() => setUseM1(!useM1)} className={`v7-measure-box ${uiState.m === 1 ? 'active' : ''} ${!useM1 ? 'opacity-20' : ''}`} title="Clic para activar/desactivar">
-                            <div className="text-[9px] text-slate-400 font-bold mb-1">1. VISUALIZA</div>
-                            <div className="flex gap-1">
-                                {[1,2,3,4].map(i => <div key={i} className={`v7-beat-dot ${uiState.m === 1 && uiState.b === i ? 'active' : ''}`}></div>)}
-                            </div>
-                        </div>
-                        <div onClick={() => setUseM2(!useM2)} className={`v7-measure-box ${uiState.m === 2 ? 'active' : ''} ${!useM2 ? 'opacity-20' : ''}`} title="Clic para activar/desactivar">
-                            <div className="text-[9px] text-slate-400 font-bold mb-1">2. ENTRADA</div>
-                            <div className="flex gap-1">
-                                {[1,2,3,4].map(i => <div key={i} className={`v7-beat-dot ${uiState.m === 2 && uiState.b === i ? 'active' : ''}`}></div>)}
-                            </div>
-                        </div>
-                        <div className={`v7-measure-box ${uiState.m === 3 ? 'active' : ''}`}>
-                            <div className="text-[9px] text-slate-400 font-bold mb-1">3. LIMADO</div>
-                            <div className="flex gap-1 flex-wrap justify-center">
-                                {Array.from({length: m3Beats}).map((_, i) => <div key={i} className={`v7-beat-dot ${uiState.m === 3 && uiState.b === i+1 ? 'active' : ''}`}></div>)}
-                            </div>
-                        </div>
-                        <div className={`v7-measure-box ${uiState.m === 4 ? 'active' : ''}`}>
-                            <div className="text-[9px] text-slate-400 font-bold mb-1">4. EJECUCIÓN</div>
-                            <div className="flex gap-1">
-                                {[1,2,3,4].map(i => <div key={i} className={`v7-beat-dot ${uiState.m === 4 && uiState.b === i ? (i===3?'hit':'active') : ''} ${i===3 ? 'bg-red-500' : ''}`}></div>)}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-slate-900/90 border border-slate-700 p-4 rounded-xl w-full grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                        <div className="flex flex-col gap-2">
-                            <span className="text-slate-400 font-bold uppercase">Fuerza</span>
-                            <select value={force} onChange={(e) => setForce(e.target.value)} className="bg-slate-800 text-white border border-slate-600 rounded p-2 outline-none">
-                                <option value="60|0.45">1. Toque (Suave)</option>
-                                <option value="120|0.20">2. Media (Normal)</option>
-                                <option value="200|0.10">3. Poder (Rompimiento)</option>
-                            </select>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <span className="text-slate-400 font-bold uppercase">Ritmo (BPM)</span>
-                            <div className="flex items-center gap-2">
-                                <input type="range" min="30" max="90" value={bpm} onChange={(e)=>setBpm(Number(e.target.value))} className="w-full" />
-                                <span className="w-6 text-right text-emerald-400 font-mono">{bpm}</span>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <span className="text-slate-400 font-bold uppercase">Configuración</span>
-                            <div className="flex gap-2">
-                                <button onClick={()=>setUseM1(!useM1)} className={`flex-1 p-1 rounded border ${useM1 ? 'bg-emerald-900 border-emerald-500 text-emerald-100' : 'bg-slate-800 border-slate-600 text-slate-500'}`}>Vis</button>
-                                <button onClick={()=>setUseM2(!useM2)} className={`flex-1 p-1 rounded border ${useM2 ? 'bg-emerald-900 border-emerald-500 text-emerald-100' : 'bg-slate-800 border-slate-600 text-slate-500'}`}>Ent</button>
-                            </div>
-                        </div>
-                        <button onClick={()=>setIsRunning(!isRunning)} className={`col-span-2 md:col-span-1 py-2 rounded-lg font-bold transition shadow-lg ${isRunning ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>
-                            {isRunning ? 'DETENER' : 'INICIAR'}
-                        </button>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- DATOS DEL CURSO ---
         const getCourseData = (userProgress) => [
+            {
+                id: 'routine', title: '0. Rutina', icon: <Icons.List />, isComplete: false,
+                content: {
+                    summary: "La Rutina Pre-Tiro: Tu ancla mental.",
+                    details: [
+                        { title: "Fase de Pensamiento (De pie)", text: "1. Tiza. 2. Analizar opciones. 3. Decidir tiro y posición. 4. Visualizar la línea y la bola fantasma. 5. Comprometerse con el tiro." },
+                        { title: "Fase de Acción (Agachado)", text: "6. Entrar en la línea. 7. Construir el puente. 8. Limajes de ritmo (Feathering). 9. Pausa 'Set'. 10. Ejecución y Congelado." },
+                        { title: "Sensación Clave", text: "Es un ritual sagrado. Separa el pensar del hacer. Una vez agachado, ya no se piensa, solo se ejecuta." }
+                    ],
+                    checklist: [
+                        { stage: "De Pie (Pensar)", steps: ["Poner Tiza", "Evaluar Mesa", "Elegir Tiro", "Visualizar Línea", "Comprometerse"] },
+                        { stage: "Entrada (Alinear)", steps: ["Pie en Línea", "Bajar Recto", "Puente Firme"] },
+                        { stage: "Abajo (Ejecutar)", steps: ["Limajes Suaves", "Pausa (Set)", "Ojos en Objetivo", "Disparo Suave", "Congelado"] }
+                    ],
+                    drills: [
+                         { type: 'off', title: 'Checklist Mental', desc: "Repite los 10 pasos mentalmente antes de dormir." },
+                         { type: 'on', title: 'Rutina Completa', desc: "Ejecuta un tiro fácil siguiendo rigurosamente los 10 pasos. Si te saltas uno, levántate y empieza de nuevo." }
+                    ]
+                }
+            },
             {
                 id: 'stance', title: '1. Postura', icon: <Icons.Stance />,
                 isComplete: userProgress?.stance,
@@ -714,7 +211,7 @@
                     ],
                     drills: [
                         { type: 'off', title: 'El Espejo', desc: "Mírate de frente: ¿Tu codo, hombro y cabeza forman una línea vertical perfecta?" }, 
-                        { type: 'on', title: 'Estatua', desc: "Tira una bola fuerte y quédate congelado 5 segundos.", tool: <StopwatchTool /> }
+                        { type: 'on', title: 'Estatua', desc: "Tira una bola fuerte y quédate inmóvil 5 segundos. Si te levantas antes, fallas.", tool: <StopwatchTool /> }
                     ],
                     evaluation: { question: "¿Cuál es la función principal de la pierna trasera?", options: [{ text: "Flexionarse", correct: false, feedback: "Incorrecto. La flexión causa inestabilidad vertical." }, { text: "Estar recta (bloqueada)", correct: true, feedback: "¡Correcto! Crea un pilar sólido bajo la línea de tiro." }, { text: "Moverse", correct: false, feedback: "Error. Moverse arruina la puntería." }] }
                 }
@@ -800,7 +297,236 @@
             }
         ];
 
-        // --- SIMULADOR COMPACTO ---
+        // --- SUB-COMPONENTS ---
+        const BilliardBallBtn = ({ color, number, label, onClick, subIcon, size = 'large' }) => {
+            const sizeClass = size === 'large' ? 'w-24 h-24' : 'w-16 h-16';
+            const numSize = size === 'large' ? 'text-2xl' : 'text-lg';
+            return (
+                <div className="flex flex-col items-center gap-2 group cursor-pointer" onClick={onClick}>
+                    <div className={`pool-ball ${sizeClass} shadow-ball animate-roll-in`} style={{backgroundColor: color}}>
+                        <div className="ball-number">{subIcon ? subIcon : <span className={numSize}>{number}</span>}</div>
+                    </div>
+                    <span className="text-[10px] font-bold text-white uppercase tracking-wider bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm group-hover:bg-emerald-600 transition">{label}</span>
+                </div>
+            );
+        };
+
+        const RoutineChecklist = ({ data }) => {
+            const [checkedItems, setCheckedItems] = useState({});
+            const toggleItem = (stepIdx) => { setCheckedItems(prev => ({...prev, [stepIdx]: !prev[stepIdx]})); };
+            return (
+                <div className="space-y-4">
+                    {data.checklist.map((phase, pIdx) => (
+                        <div key={pIdx} className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <h4 className="text-xs font-bold text-indigo-500 uppercase mb-2 border-b border-slate-200 dark:border-slate-700 pb-1">{phase.stage}</h4>
+                            <div className="space-y-2">
+                                {phase.steps.map((step, sIdx) => {
+                                    const key = `${pIdx}-${sIdx}`;
+                                    const isChecked = checkedItems[key];
+                                    return (
+                                        <div key={sIdx} onClick={() => toggleItem(key)} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition ${isChecked ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'hover:bg-white dark:hover:bg-slate-700'}`}>
+                                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition ${isChecked ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-400 text-transparent'}`}><Icons.Check /></div>
+                                            <span className={`text-sm ${isChecked ? 'text-emerald-700 dark:text-emerald-300 line-through opacity-70' : 'text-slate-700 dark:text-slate-300'}`}>{step}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const EvaluationCard = ({ data, onComplete }) => {
+            const [selected, setSelected] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const handleSelect = (idx) => { 
+                if (showFeedback) return; 
+                setSelected(idx); setShowFeedback(true);
+                if (data.options[idx].correct && onComplete) onComplete();
+            };
+            const reset = () => { setSelected(null); setShowFeedback(false); };
+            useEffect(reset, [data]);
+            if (!data) return null;
+            return (
+                <div className="mt-6 bg-slate-100 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2 mb-3"><span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 p-1 rounded"><Icons.Check /></span><h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Evaluación Rápida</h3></div>
+                    <p className="text-sm font-medium mb-3 text-slate-700 dark:text-slate-300">{data.question}</p>
+                    <div className="space-y-2">
+                        {data.options.map((opt, idx) => {
+                            let itemClass = "w-full text-left p-3 rounded-lg text-xs font-bold transition flex justify-between items-center ";
+                            if (showFeedback) {
+                                if (idx === selected) itemClass += opt.correct ? "bg-emerald-100 text-emerald-800 border-2 border-emerald-500" : "bg-red-100 text-red-800 border-2 border-red-500";
+                                else if (opt.correct) itemClass += "bg-emerald-50 text-emerald-600 border border-emerald-200 opacity-70"; 
+                                else itemClass += "bg-white dark:bg-slate-800 text-slate-400 opacity-50";
+                            } else itemClass += "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700";
+                            return (<button key={idx} onClick={() => handleSelect(idx)} className={itemClass} disabled={showFeedback}>{opt.text}{showFeedback && idx === selected && (opt.correct ? <Icons.Check /> : <Icons.X />)}</button>);
+                        })}
+                    </div>
+                    {showFeedback && (<div className={`mt-3 text-xs p-2 rounded ${data.options[selected].correct ? 'text-emerald-700 bg-emerald-50' : 'text-red-700 bg-red-50'}`}><strong>Retroalimentación: </strong> {data.options[selected].feedback}{!data.options[selected].correct && <button onClick={reset} className="block mt-2 text-indigo-600 underline">Intentar de nuevo</button>}</div>)}
+                </div>
+            );
+        };
+
+        const UserLogin = ({ onLogin, users, setUsers }) => {
+            const [newUser, setNewUser] = useState('');
+            const [view, setView] = useState('menu');
+            const fileInputRef = useRef(null);
+            const ballColors = ['#facc15', '#1d4ed8', '#ef4444', '#7e22ce', '#f97316', '#15803d', '#881337', '#000000'];
+
+            const handleAddUser = () => {
+                if (newUser.trim()) {
+                    const newUserData = { name: newUser.trim(), id: Date.now(), progress: {} };
+                    const updated = [...users, newUserData];
+                    setUsers(updated);
+                    saveToLocal('tm_users', updated);
+                    setNewUser('');
+                    setView('list');
+                }
+            };
+            const handleDeleteUser = (id, e) => {
+                e.stopPropagation();
+                if (window.confirm("¿Borrar usuario?")) {
+                    const updated = users.filter(u => u.id !== id);
+                    setUsers(updated);
+                    saveToLocal('tm_users', updated);
+                }
+            };
+            const handleGuest = () => onLogin({ name: "Invitado", isGuest: true, progress: {} });
+            const handleImportClick = () => fileInputRef.current.click();
+            const handleImportFile = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try { 
+                        const imported = JSON.parse(e.target.result); 
+                        setUsers(imported); 
+                        saveToLocal('tm_users', imported);
+                        alert("Importado!"); 
+                    } catch (error) { alert("Error"); }
+                };
+                reader.readAsText(file);
+            };
+            const handleExport = () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(users));
+                const node = document.createElement('a');
+                node.setAttribute("href", dataStr);
+                node.setAttribute("download", "tiro_maestro_users.json");
+                document.body.appendChild(node); node.click(); node.remove();
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center wood-texture p-4 relative overflow-hidden">
+                    <div className="absolute inset-4 sm:inset-8 rounded-3xl shadow-felt border-8 border-[#2a1e10]/50 animate-felt-cycle felt-bg"></div>
+                    <div className="absolute top-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2 z-0"></div>
+                    <div className="absolute bottom-6 left-1/2 w-2 h-2 bg-white/50 rotate-45 transform -translate-x-1/2 z-0"></div>
+                    <div className="z-10 w-full max-w-2xl flex flex-col items-center">
+                        <div className="bg-black/40 backdrop-blur-md px-8 py-4 rounded-full border border-white/10 mb-12 shadow-2xl flex flex-col items-center">
+                            <h1 className="text-4xl font-black text-white tracking-tighter drop-shadow-lg">TIRO MAESTRO</h1>
+                            <span className="text-emerald-400 text-xs font-bold uppercase tracking-[0.3em]">Técnica</span>
+                        </div>
+                        {view === 'menu' && (
+                            <div className="flex flex-col items-center w-full">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center mb-8">
+                                    <BilliardBallBtn color="#facc15" number="1" label="Cargar" onClick={() => setView('list')} />
+                                    <BilliardBallBtn color="#1d4ed8" subIcon={<Icons.Plus />} label="Crear" onClick={() => setView('add')} />
+                                    <BilliardBallBtn color="#000000" number="8" label="Invitado" onClick={handleGuest} />
+                                    <div className="flex flex-col gap-4">
+                                        <div onClick={handleImportClick} className="cursor-pointer flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-white border-4 border-red-600 shadow-ball flex items-center justify-center transform group-hover:scale-110 transition"><Icons.Upload /></div><span className="text-[9px] text-white font-bold bg-black/40 px-2 rounded mt-1">Import</span></div>
+                                        <div onClick={handleExport} className="cursor-pointer flex flex-col items-center group"><div className="w-12 h-12 rounded-full bg-white border-4 border-purple-600 shadow-ball flex items-center justify-center transform group-hover:scale-110 transition"><Icons.Download /></div><span className="text-[9px] text-white font-bold bg-black/40 px-2 rounded mt-1">Export</span></div>
+                                        <input type="file" ref={fileInputRef} onChange={handleImportFile} className="hidden" accept=".json" />
+                                    </div>
+                                </div>
+                                <div className="w-full max-w-lg flex flex-col gap-3">
+                                    <a href="https://juanmiguel0927.github.io/Pool/" className="w-full bg-emerald-800/90 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg border-2 border-emerald-400/30 flex items-center justify-between shadow-lg transition group backdrop-blur-sm"><span className="uppercase tracking-widest text-xs">Plan de Entrenamiento</span><div className="bg-white/10 p-1 rounded-full group-hover:translate-x-1 transition-transform"><Icons.ArrowRight /></div></a>
+                                    <a href="https://juanmiguel0927.github.io/ExamenPool/" className="w-full bg-indigo-900/90 hover:bg-indigo-800 text-white font-bold py-3 px-4 rounded-lg border-2 border-indigo-400/30 flex items-center justify-between shadow-lg transition group backdrop-blur-sm"><span className="uppercase tracking-widest text-xs">Examen Pool</span><div className="bg-white/10 p-1 rounded-full group-hover:translate-x-1 transition-transform"><Icons.ArrowRight /></div></a>
+                                </div>
+                            </div>
+                        )}
+                        {view === 'list' && (
+                            <div className="w-full max-w-lg">
+                                <div className="flex flex-wrap gap-6 justify-center p-4">
+                                    {users.map((u, i) => (
+                                        <div key={u.id || i} className="relative group">
+                                            <BilliardBallBtn color={ballColors[i % 7]} number={u.name.substring(0,2).toUpperCase()} label={u.name} onClick={() => onLogin(u)} />
+                                            <button onClick={(e) => handleDeleteUser(u.id, e)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition shadow-md border border-white"><Icons.Trash /></button>
+                                        </div>
+                                    ))}
+                                    {users.length === 0 && <p className="text-white font-bold">No hay jugadores.</p>}
+                                </div>
+                                <button onClick={() => setView('menu')} className="mx-auto mt-8 block text-white/70 hover:text-white font-bold uppercase text-xs tracking-widest border-b border-transparent hover:border-white transition">← Volver al Menú</button>
+                            </div>
+                        )}
+                        {view === 'add' && (
+                            <div className="bg-black/50 backdrop-blur p-6 rounded-2xl border border-white/10 w-full max-w-sm animate-fade-in">
+                                <label className="block text-white text-xs font-bold uppercase mb-2">Nombre del Jugador</label>
+                                <input type="text" value={newUser} onChange={(e) => setNewUser(e.target.value)} className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-emerald-500 mb-4" placeholder="Ej: Efren Reyes" autoFocus />
+                                <div className="flex gap-2"><button onClick={() => setView('menu')} className="flex-1 py-3 rounded-lg bg-white/10 text-white font-bold hover:bg-white/20 transition">Cancelar</button><button onClick={handleAddUser} className="flex-1 py-3 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition shadow-lg">Crear</button></div>
+                            </div>
+                        )}
+                        <div className="absolute bottom-8 text-center w-full"><p className="text-[10px] text-white/40 font-medium">Desarrollado por <span className="text-emerald-400">Juan Miguel Rios Redondo</span></p></div>
+                    </div>
+                </div>
+            );
+        };
+
+        const QuizMode = ({ data }) => {
+            const [currentQ, setCurrentQ] = useState(0);
+            const [score, setScore] = useState(0);
+            const [finished, setFinished] = useState(false);
+            const [selected, setSelected] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+
+            const handleSelect = (idx) => {
+                if (showFeedback) return;
+                setSelected(idx); setShowFeedback(true);
+                if (data.questions[currentQ].options[idx].correct) setScore(score + 1);
+            };
+
+            const handleNext = () => {
+                if (currentQ < data.questions.length - 1) { setCurrentQ(currentQ + 1); setSelected(null); setShowFeedback(false); } 
+                else { setFinished(true); }
+            };
+
+            const resetQuiz = () => { setCurrentQ(0); setScore(0); setFinished(false); setSelected(null); setShowFeedback(false); };
+
+            if (finished) {
+                const percentage = (score / data.questions.length) * 100;
+                let title = percentage >= 100 ? "Gran Maestro" : percentage >= 80 ? "Profesional" : "Aficionado";
+                return (
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg text-center animate-fade-in border border-slate-200 dark:border-slate-800">
+                        <div className="mb-4 flex justify-center text-emerald-500"><Icons.Check /></div>
+                        <h2 className="text-2xl font-bold mb-2 dark:text-white">Examen Finalizado</h2>
+                        <p className="text-slate-500 mb-6 text-sm">Tu resultado final:</p>
+                        <div className="text-5xl font-black text-indigo-600 dark:text-indigo-400 mb-2">{score}/{data.questions.length}</div>
+                        <div className="inline-block bg-slate-100 dark:bg-slate-800 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 mb-8">{title}</div>
+                        <button onClick={resetQuiz} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition">Intentar de nuevo</button>
+                    </div>
+                );
+            }
+
+            const q = data.questions[currentQ];
+            return (
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 animate-fade-in">
+                    <div className="flex justify-between items-center mb-4"><span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pregunta {currentQ + 1} de {data.questions.length}</span><span className="text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded">Puntos: {score}</span></div>
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 leading-snug">{q.question}</h3>
+                    <div className="space-y-3 mb-6">
+                        {q.options.map((opt, idx) => {
+                            let itemClass = "w-full text-left p-4 rounded-xl text-sm font-medium transition border-2 flex justify-between items-center ";
+                            if (showFeedback) {
+                                if (idx === selected) itemClass += opt.correct ? "bg-emerald-50 border-emerald-500 text-emerald-700" : "bg-red-50 border-red-500 text-red-700";
+                                else if (opt.correct) itemClass += "bg-emerald-50 border-emerald-200 text-emerald-600 opacity-70";
+                                else itemClass += "border-transparent bg-slate-50 dark:bg-slate-800 text-slate-400 opacity-50";
+                            } else itemClass += "bg-slate-50 dark:bg-slate-800 border-transparent hover:border-indigo-200 text-slate-700 dark:text-slate-200";
+                            return (<button key={idx} onClick={() => handleSelect(idx)} className={itemClass} disabled={showFeedback}>{opt.text}{showFeedback && idx === selected && (opt.correct ? <Icons.Check /> : <Icons.X />)}</button>);
+                        })}
+                    </div>
+                    {showFeedback && (<div className="animate-fade-in"><div className={`text-sm p-4 rounded-xl mb-4 ${q.options[selected].correct ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300' : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300'}`}><p className="font-bold mb-1">{q.options[selected].correct ? '¡Correcto!' : 'Incorrecto'}</p><p className="opacity-90">{q.options[selected].feedback}</p></div><button onClick={handleNext} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition flex items-center justify-center gap-2">{currentQ < data.questions.length - 1 ? 'Siguiente Pregunta' : 'Ver Resultados'} <Icons.Play /></button></div>)}
+                </div>
+            );
+        };
+
         const SmartSimulator = ({ onLoadDrill }) => {
             const TABLE_W = 600, TABLE_H = 300, BALL_R = 12, BORDER = 25, PLAY_AREA_MARGIN = BALL_R; 
             const [cb, setCb] = useState({ x: 150, y: 150 });
@@ -913,6 +639,267 @@
             );
         };
 
+        const TrainerV7 = () => {
+            const cueRef = useRef(null);
+            const mainTextRef = useRef(null);
+            const subTextRef = useRef(null);
+            const audioCtx = useRef(null);
+            const timerID = useRef(null);
+            const nextNoteTime = useRef(0.0);
+            
+            const [isRunning, setIsRunning] = useState(false);
+            const [bpm, setBpm] = useState(60);
+            const [reps, setReps] = useState(10); 
+            const [force, setForce] = useState("120|0.20"); 
+            const [m3Beats, setM3Beats] = useState(4);
+            const [useM1, setUseM1] = useState(true);
+            const [useM2, setUseM2] = useState(true);
+            const [uiState, setUiState] = useState({ m: 1, b: 0, s: 1 });
+
+            // Configurantes de física
+            const P_GAP = 8;
+            const P_FEATHER_DIST = 50;
+            const P_THROUGH_DIST = 160;
+
+            const playSound = (type) => {
+                if (!audioCtx.current) return;
+                const ctx = audioCtx.current;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                const now = ctx.currentTime;
+
+                if (type === 'tick') {
+                    osc.frequency.value = 800; osc.type = 'square';
+                    gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.05);
+                } else if (type === 'measure-start') {
+                    osc.frequency.value = 1200; osc.type = 'square';
+                    gain.gain.setValueAtTime(0.12, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.08);
+                } else if (type === 'hit') {
+                    osc.frequency.value = 150; osc.type = 'sawtooth';
+                    gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.15);
+                } 
+                osc.start(now); osc.stop(now+0.2);
+            };
+
+            const setText = (main, sub) => {
+                if(mainTextRef.current) mainTextRef.current.textContent = main;
+                if(subTextRef.current) subTextRef.current.textContent = sub;
+            };
+
+            const setCue = (x, duration, ease = 'linear') => {
+                if(cueRef.current) {
+                    cueRef.current.style.transition = `transform ${duration}s ${ease}`;
+                    cueRef.current.style.transform = `translateX(${x}px)`;
+                }
+            };
+
+            const runVisuals = (m, b, s) => {
+                setUiState({ m, b, s });
+                const secPerBeat = 60/bpm;
+
+                if (m === 1) {
+                    setCue(-P_GAP, 0);
+                    const texts = ["1. VISUALIZA", "RESPIRA", "ENFOCA", "LISTO"];
+                    const subs = ["Mente en silencio.", "Inhala profundo.", "Ojos en la bola.", "Prepárate."];
+                    if(b <= 4) setText(texts[b-1], subs[b-1]);
+                }
+                else if (m === 2) {
+                    setCue(-P_GAP, 0);
+                    const texts = ["PASO DERECHO", "PASO IZQUIERDO", "AGACHADO", "PUENTE"];
+                    const subs = ["Pie en línea.", "Abre base.", "Barbilla al taco.", "Agarre suave."];
+                    if(b <= 4) setText(texts[b-1], subs[b-1]);
+                }
+                else if (m === 3) {
+                    const isBack = (b % 2 !== 0);
+                    if (isBack) {
+                        setText("LIMADO ATRÁS", "Suave, sin apretar.");
+                        setCue(-(P_GAP + P_FEATHER_DIST), secPerBeat, 'ease-in-out');
+                    } else {
+                        setText("LIMADO ADELANTE", "Acércate SIN tocar.");
+                        setCue(-P_GAP, secPerBeat, 'ease-in-out');
+                    }
+                    if (b === m3Beats) setText("LISTO PARA TIRAR", "Última pausa.");
+                }
+                else if (m === 4) {
+                    const [dist, time] = force.split('|').map(Number);
+                    if(b===1) {
+                        setText("4. BACKSWING FINAL", "Atrás... Distancia.");
+                        setCue(-(P_GAP + dist), secPerBeat, 'ease-out');
+                    } else if(b===2) {
+                        setText("¡¡ PAUSA !!", "Quieto.");
+                    } else if(b===3) {
+                        setText("¡¡ GOLPE !!", "Suelta el brazo.");
+                        setCue(P_THROUGH_DIST, time, 'cubic-bezier(0.22, 0.61, 0.36, 1)'); 
+                    } else if(b===4) {
+                        setText("FREEZE", "Quédate abajo.");
+                    }
+                }
+            };
+
+            const advanceMeasure = (currentM, currentS) => {
+                let nextM = currentM + 1;
+                let nextS = currentS;
+                if (nextM > 4) { nextM = 1; nextS++; }
+                if (nextM === 1 && !useM1) nextM = 2;
+                if (nextM === 2 && !useM2) nextM = 3;
+                return { nextM, nextS };
+            };
+
+            const stateRef = useRef({ m: 1, b: 0, s: 1 });
+
+            const scheduleNote = (m, b, s, time) => {
+                const delay = Math.max(0, (time - audioCtx.current.currentTime) * 1000);
+                setTimeout(() => {
+                    if (!isRunning) return;
+                    runVisuals(m, b, s);
+                    if (m === 4 && b === 3) playSound('hit');
+                    else if (b === 1) playSound('measure-start'); 
+                    else playSound('tick');
+                }, delay);
+            };
+
+            const nextNote = () => {
+                const secondsPerBeat = 60.0 / bpm;
+                nextNoteTime.current += secondsPerBeat;
+                stateRef.current.b++;
+                
+                let beatsInMeasure = 4;
+                if (stateRef.current.m === 3) beatsInMeasure = m3Beats;
+
+                if (stateRef.current.b > beatsInMeasure) {
+                    stateRef.current.b = 1;
+                    const { nextM, nextS } = advanceMeasure(stateRef.current.m, stateRef.current.s);
+                    stateRef.current.m = nextM;
+                    stateRef.current.s = nextS;
+                }
+            };
+
+            const scheduler = () => {
+                if (!isRunning) return;
+                while (nextNoteTime.current < audioCtx.current.currentTime + 0.1) {
+                    if (stateRef.current.s > reps) {
+                        setIsRunning(false);
+                        //playSound('finish'); // Opcional: sonido de finalización
+                        setText("¡SERIE COMPLETADA!", "Descansa.");
+                        return;
+                    }
+                    scheduleNote(stateRef.current.m, stateRef.current.b, stateRef.current.s, nextNoteTime.current);
+                    nextNote();
+                }
+                timerID.current = requestAnimationFrame(scheduler);
+            };
+
+            useEffect(() => {
+                if (isRunning) {
+                    if (!audioCtx.current) audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.current.state === 'suspended') audioCtx.current.resume();
+                    nextNoteTime.current = audioCtx.current.currentTime + 0.1;
+                    stateRef.current = { m: useM1 ? 1 : (useM2 ? 2 : 3), b: 0, s: 1 };
+                    scheduler();
+                } else {
+                    cancelAnimationFrame(timerID.current);
+                }
+                return () => cancelAnimationFrame(timerID.current);
+            }, [isRunning]);
+
+            return (
+                <div className="flex flex-col items-center w-full max-w-3xl mx-auto p-2">
+                    <div className="absolute top-20 right-4 bg-black/60 px-3 py-1 rounded-full border border-emerald-500 text-white font-mono text-xs z-50">
+                        TIRO: {uiState.s} {reps > 0 ? `/ ${reps}` : ''}
+                    </div>
+                    
+                    <div className="text-center mb-4 h-16">
+                        <div ref={mainTextRef} className="text-2xl font-black text-yellow-400 drop-shadow-md tracking-wider">ENTRENADOR DE RITMO</div>
+                        <div ref={subTextRef} className="text-sm text-slate-400">Física de aceleración por distancia</div>
+                    </div>
+
+                    <div className="w-full flex justify-center mb-4 overflow-hidden">
+                        <div className="relative" style={{width: '700px', height: '280px', transform: 'scale(0.8)', transformOrigin: 'top center'}}> 
+                            <div className="v7-pool-border">
+                                <div className="v7-diamond" style={{left: '25%'}}></div><div className="v7-diamond" style={{left: '50%'}}></div><div className="v7-diamond" style={{left: '75%'}}></div>
+                                <div className="v7-felt">
+                                    <div className="v7-ball"></div>
+                                    <div ref={cueRef} className="v7-cue"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-1 w-full mb-6">
+                        <div onClick={() => setUseM1(!useM1)} className={`v7-measure-box ${uiState.m === 1 ? 'active' : ''} ${!useM1 ? 'opacity-20' : ''}`} title="Clic para activar/desactivar">
+                            <div className="text-[9px] text-slate-400 font-bold mb-1">1. VISUALIZA</div>
+                            <div className="flex gap-1">
+                                {[1,2,3,4].map(i => <div key={i} className={`v7-beat-dot ${uiState.m === 1 && uiState.b === i ? 'active' : ''}`}></div>)}
+                            </div>
+                        </div>
+                        <div onClick={() => setUseM2(!useM2)} className={`v7-measure-box ${uiState.m === 2 ? 'active' : ''} ${!useM2 ? 'opacity-20' : ''}`} title="Clic para activar/desactivar">
+                            <div className="text-[9px] text-slate-400 font-bold mb-1">2. ENTRADA</div>
+                            <div className="flex gap-1">
+                                {[1,2,3,4].map(i => <div key={i} className={`v7-beat-dot ${uiState.m === 2 && uiState.b === i ? 'active' : ''}`}></div>)}
+                            </div>
+                        </div>
+                        <div className={`v7-measure-box ${uiState.m === 3 ? 'active' : ''}`}>
+                            <div className="text-[9px] text-slate-400 font-bold mb-1">3. LIMADO</div>
+                            <div className="flex gap-1 flex-wrap justify-center">
+                                {Array.from({length: m3Beats}).map((_, i) => <div key={i} className={`v7-beat-dot ${uiState.m === 3 && uiState.b === i+1 ? 'active' : ''}`}></div>)}
+                            </div>
+                        </div>
+                        <div className={`v7-measure-box ${uiState.m === 4 ? 'active' : ''}`}>
+                            <div className="text-[9px] text-slate-400 font-bold mb-1">4. EJECUCIÓN</div>
+                            <div className="flex gap-1">
+                                {[1,2,3,4].map(i => <div key={i} className={`v7-beat-dot ${uiState.m === 4 && uiState.b === i ? (i===3?'hit':'active') : ''} ${i===3 ? 'bg-red-500' : ''}`}></div>)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-900/90 border border-slate-700 p-4 rounded-xl w-full grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                        <div className="flex flex-col gap-2">
+                            <span className="text-slate-400 font-bold uppercase">Fuerza</span>
+                            <select value={force} onChange={(e) => setForce(e.target.value)} className="bg-slate-800 text-white border border-slate-600 rounded p-2 outline-none">
+                                <option value="60|0.45">1. Toque (Suave)</option>
+                                <option value="120|0.20">2. Media (Normal)</option>
+                                <option value="200|0.10">3. Poder (Rompimiento)</option>
+                            </select>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <span className="text-slate-400 font-bold uppercase">Ritmo (BPM)</span>
+                            <div className="flex items-center gap-2">
+                                <input type="range" min="30" max="90" value={bpm} onChange={(e)=>setBpm(Number(e.target.value))} className="w-full" />
+                                <span className="w-6 text-right text-emerald-400 font-mono">{bpm}</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <span className="text-slate-400 font-bold uppercase">Limados</span>
+                            <select value={m3Beats} onChange={(e) => setM3Beats(parseInt(e.target.value))} className="bg-slate-800 text-white border border-slate-600 rounded p-2 outline-none">
+                                <option value="4">4 Tiempos</option>
+                                <option value="6">6 Tiempos</option>
+                                <option value="8">8 Tiempos</option>
+                                <option value="10">10 Tiempos</option>
+                                <option value="12">12 Tiempos</option>
+                            </select>
+                        </div>
+                         <div className="flex flex-col gap-2">
+                            <span className="text-slate-400 font-bold uppercase">Repeticiones</span>
+                            <input type="number" value={reps} onChange={(e)=>setReps(parseInt(e.target.value))} className="bg-slate-800 text-white border border-slate-600 rounded p-2 outline-none w-full" min="1" max="100" />
+                        </div>
+                        <div className="flex flex-col gap-2 col-span-2 md:col-span-4">
+                            <span className="text-slate-400 font-bold uppercase">Configuración</span>
+                            <div className="flex gap-2">
+                                <button onClick={()=>setUseM1(!useM1)} className={`flex-1 p-1 rounded border ${useM1 ? 'bg-emerald-900 border-emerald-500 text-emerald-100' : 'bg-slate-800 border-slate-600 text-slate-500'}`}>Vis</button>
+                                <button onClick={()=>setUseM2(!useM2)} className={`flex-1 p-1 rounded border ${useM2 ? 'bg-emerald-900 border-emerald-500 text-emerald-100' : 'bg-slate-800 border-slate-600 text-slate-500'}`}>Ent</button>
+                            </div>
+                        </div>
+
+                        <button onClick={()=>setIsRunning(!isRunning)} className={`col-span-2 md:col-span-4 py-2 rounded-lg font-bold transition shadow-lg mt-2 ${isRunning ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>
+                            {isRunning ? 'DETENER' : 'INICIAR RUTINA'}
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
         const App = () => {
             const [dark, setDark] = useState(true);
             const [tab, setTab] = useState('stance');
@@ -1009,6 +996,10 @@
                                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
                                         <h2 className="text-xl font-bold mb-3 flex items-center gap-2 text-slate-800 dark:text-white">{activeData.title}</h2>
                                         <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed border-l-4 border-emerald-500 pl-4 mb-5">{activeData.content.summary}</p>
+                                        
+                                        {/* RENDERIZADO DE LA CHECKLIST SI EXISTE */}
+                                        {activeData.content.checklist && <RoutineChecklist data={activeData.content} />}
+
                                         {activeData.content.details && <div className="grid gap-3 mb-4">{activeData.content.details.map((d,i) => <div key={i} className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg"><h4 className="text-xs font-bold text-indigo-500 uppercase mb-1">{d.title}</h4><p className="text-sm text-slate-700 dark:text-slate-300">{d.text}</p></div>)}</div>}
                                         {activeData.content.drills && <div className="grid gap-3"><div className="text-xs font-bold text-slate-400 uppercase mt-2">Ejercicios Prácticos</div>{activeData.content.drills.map((drill, idx) => <div key={idx} className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 p-4 rounded-xl"><div className="flex justify-between items-start mb-2"><div className="flex items-center gap-2"><span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${drill.type === 'off' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{drill.type === 'off' ? <span className="flex items-center gap-1"><Icons.Home /> Casa</span> : <span className="flex items-center gap-1"><Icons.Table /> Mesa</span>}</span><h4 className="font-bold text-indigo-900 dark:text-indigo-200 text-sm">{drill.title}</h4></div>{drill.setup && <button onClick={()=>loadDrill(drill.setup)} className="text-[10px] font-bold bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1 hover:bg-indigo-700 transition"><Icons.Play /> Cargar</button>}</div><p className="text-sm text-slate-600 dark:text-slate-400">{drill.desc}</p>{drill.tool && <div className="mt-2 pt-2 border-t border-indigo-200 dark:border-indigo-800">{drill.tool}</div>}</div>)}</div>}
                                         {activeData.content.evaluation && <EvaluationCard data={activeData.content.evaluation} onComplete={handleProgress} />}
